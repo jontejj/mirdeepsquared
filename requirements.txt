@@ -1,0 +1,4 @@
+tensorflow==2.14.0
+screed==1.1.2
+pandas==2.1.2
+scikit-learn==1.3.2
