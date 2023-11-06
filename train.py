@@ -8,7 +8,7 @@ import pandas as pd
 from tensorflow import keras
 import tensorflow as tf
 #from tensorflow.keras import layers
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, GlobalMaxPooling1D, BatchNormalization
 from keras.models import Model
 from keras.preprocessing.sequence import pad_sequences
 
@@ -106,19 +106,25 @@ def get_model_chatgpt(df, seq_length):
     vectorized_layer = vectorize_layer(input_layer)
 
     embedding_layer = Embedding(input_dim=max_features, output_dim=64, input_length=seq_length)(vectorized_layer)
-
+    
+    conv1d_layer = Conv1D(filters=64, kernel_size=3, activation='relu')(embedding_layer)
+    maxpooling_layer = GlobalMaxPooling1D()(conv1d_layer)
     # Global average pooling over the sequence dimension
-    pooled_layer = GlobalAveragePooling1D()(embedding_layer)
+    #pooled_layer = GlobalAveragePooling1D()(embedding_layer)
     #flatten_layer = Flatten()(embedding_layer)
 
     # Dense layers for classification
-    dense_layer = Dense(128, activation='relu')(pooled_layer)
-    output_layer = Dense(1, activation='sigmoid')(dense_layer)
+    #batch_norm_layer = BatchNormalization(trainable=True)(maxpooling_layer) #TODO: remember to set trainable=False when inferring
+    dense_layer = Dense(128, activation='relu', kernel_initializer=tf.keras.initializers.HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(maxpooling_layer)
+    output_layer = Dense(1, activation='sigmoid', kernel_initializer=tf.keras.initializers.GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
 
     # Create the model
     model = Model(inputs=input_layer, outputs=output_layer)
+
+    initial_learning_rate = 0.0003
+    lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
     # Compile the model
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=lr_schedule), loss='binary_crossentropy', metrics=['accuracy'])
 
     # Print a summary of the model architecture
     model.summary()
@@ -126,6 +132,20 @@ def get_model_chatgpt(df, seq_length):
 
 if __name__ == '__main__':
 
+
+    #inputs = tf.random.uniform(shape=(1,3)) 
+    #inputs = tf.constant([[[1, 1, 1], [2, 2, 2]]])
+
+    #flatten = Flatten()
+    # What should we expect as the output?
+    #outputs = flatten(inputs)
+
+    #tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=42)
+    #tf.keras.initializers.Constant(value=0.5)
+    #dense_layer = Dense(units=4, activation="relu", use_bias=True, bias_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.5, seed=42), kernel_initializer=tf.keras.initializers.HeNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2')
+    #print(dense_layer(outputs))
+    #print(dense_layer.weights)
+    #exit()
 
     df1 = pd.read_pickle("not_false_positives_small.pkl")
     df2 = pd.read_pickle("false_positives_small.pkl")
@@ -139,6 +159,8 @@ if __name__ == '__main__':
     print(df.head())
 
     print(df.dtypes)
+
+    print(df['read_density_map'])
 
     consensus_texts = list(df['consensus_sequence_as_sentence'])
     

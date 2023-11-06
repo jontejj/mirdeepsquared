@@ -8,6 +8,10 @@ import re
     
 if __name__ == '__main__':
 
-    m = re.sub(r"pri_seq\s*", "", "pri_seq                       uccaugcaagaagagagcugauaugaagcacuguauuaggagugcugcaaauaacaguagugucuuucucuuugagauaggauuuagugaagauauuuuccaaacauu")
-    print(m)
+    input = "'seq_378026_x1                  ...............................ugcugguuucuuccacagugg..........................................................\t0\n'"
+    m = re.search(r"[A-Za-z]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", input)
+    if m is not None:
+        print(m)
+        print(int(m.group(2)))
+    print(int("xxx"))
     pass

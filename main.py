@@ -1,8 +1,10 @@
 import os
 import pprint
+from numpy.core.multiarray import empty
 import screed # a library for reading in FASTA/FASTQ
 import pandas as pd
 import re
+import numpy as np
 
 def process_mrd_file(mrd_file):
     input_features = {}
@@ -14,7 +16,11 @@ def process_mrd_file(mrd_file):
     mm_offset = 0
     mm_count = 0
     exp = ""
+    location_name = ""
+    read_density_map = np.zeros(112, dtype=np.int32)
     for x in mrd:
+        #TODO: can also be cel-miR-38 etc...
+        match_for_read = re.search(r"[A-Za-z]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", x)
         if x.startswith(">"):
             location_name = x[1:-1] #Usually chromosome location
         if x.startswith("exp"):
@@ -23,16 +29,26 @@ def process_mrd_file(mrd_file):
             pri_seq = re.sub(r"pri_seq\s*", "", x)[0:-1]
         elif x.startswith("pri_struct"):
             pri_struct = re.sub(r"pri_struct\s*", "", x)[0:-5]
-            input_features[location_name] = { "pri_seq" : pri_seq, 
-                                                    "pri_struct" : pri_struct, 
-                                                    "exp" : exp,
-                                                    "mature_read_count": mature_read_count, 
-                                                    "star_read_count":star_read_count}
-
         elif x.startswith("mature read count"):
             mature_read_count = int(x.replace("mature read count", ""))
         elif x.startswith("star read count"):
             star_read_count = int(x.replace("star read count", ""))
+        elif match_for_read is not None:
+            repeated_count = int(match_for_read.group(2))
+            read_sequence = match_for_read.group(3)
+            i = 0
+            for c in read_sequence:
+                if c != '.':
+                    read_density_map[i] += repeated_count
+                i+=1
+        elif x == "\n" and location_name not in input_features:
+            input_features[location_name] = { "pri_seq" : pri_seq, 
+                                                    "pri_struct" : pri_struct, 
+                                                    "exp" : exp,
+                                                    "mature_read_count": mature_read_count, 
+                                                    "star_read_count":star_read_count,
+                                                    "read_density_map":read_density_map}
+            read_density_map = np.zeros(112, dtype=np.int32)
     mrd.close()
     return input_features
 
@@ -93,7 +109,7 @@ def print_stats(input_features):
     print("Novel miRNA:s not in mirgene db: " + str(len(filtered_dict)))
 
 def convert_to_dataframe(input_features, false_positive):
-    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "in_mirgene_db" : [], "false_positive" : []}
+    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "in_mirgene_db" : [], "false_positive" : [], "read_density_map" : []}
     for location, values in input_features.items():
         if 'predicted_as_novel' in values: #Ignore entries not in result.csv
             input_features_as_lists_in_dict['location'].append(location)
@@ -107,17 +123,18 @@ def convert_to_dataframe(input_features, false_positive):
             input_features_as_lists_in_dict['mm_struct'].append(values['mm_struct'])
             input_features_as_lists_in_dict['in_mirgene_db'].append(values['in_mirgene_db'])
             input_features_as_lists_in_dict['false_positive'].append(false_positive)
+            input_features_as_lists_in_dict['read_density_map'].append(values['read_density_map'])
 
     return pd.DataFrame.from_dict(input_features_as_lists_in_dict)
 
 if __name__ == '__main__':
 
     mirgene_db_known_human_mature_filepath = "resources/known-mature-sequences-h_sapiens.fas"
-    #mrd_filepath = "resources/output.mrd"
-    #result_filepath = "resources/result_30_10_2023_t_15_05_15.csv"
+    mrd_filepath = "resources/output.mrd"
+    result_filepath = "resources/result_30_10_2023_t_15_05_15.csv"
     false_positive = False
-    mrd_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd" #false_positive = False
-    result_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv"
+    #mrd_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd" #false_positive = False
+    #result_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv"
 
     #TODO: read in healthy dataset and set false_positive = True
 
