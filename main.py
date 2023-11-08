@@ -37,7 +37,7 @@ def process_mrd_file(mrd_file):
             repeated_count = int(match_for_read.group(2))
             read_sequence = match_for_read.group(3)
             i = 0
-            for c in read_sequence:
+            for c in read_sequence[:112]: #Truncate at 112
                 if c != '.':
                     read_density_map[i] += repeated_count
                 i+=1
@@ -72,6 +72,7 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
               mm_offset = data_from_mrd[location_name]["pri_seq"].index(data_from_mrd[location_name]["consensus_sequence"])
               mm_struct = data_from_mrd[location_name]["pri_struct"][mm_offset: mm_offset + len(data_from_mrd[location_name]["consensus_sequence"])]
               data_from_mrd[location_name]["mm_struct"] = mm_struct
+              data_from_mrd[location_name]["mm_offset"] = mm_offset
     #pp = pprint.PrettyPrinter(width=100, compact=True)
     #pp.pprint(input_features)
     #print("Unfiltered size: " + str(len(input_features)))
@@ -109,7 +110,7 @@ def print_stats(input_features):
     print("Novel miRNA:s not in mirgene db: " + str(len(filtered_dict)))
 
 def convert_to_dataframe(input_features, false_positive):
-    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "in_mirgene_db" : [], "false_positive" : [], "read_density_map" : []}
+    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "in_mirgene_db" : [], "false_positive" : [], "read_density_map" : []}
     for location, values in input_features.items():
         if 'predicted_as_novel' in values: #Ignore entries not in result.csv
             input_features_as_lists_in_dict['location'].append(location)
@@ -121,6 +122,7 @@ def convert_to_dataframe(input_features, false_positive):
             input_features_as_lists_in_dict['consensus_sequence'].append(values['consensus_sequence'])
             input_features_as_lists_in_dict['predicted_as_novel'].append(values['predicted_as_novel'])
             input_features_as_lists_in_dict['mm_struct'].append(values['mm_struct'])
+            input_features_as_lists_in_dict['mm_offset'].append(values['mm_offset'])
             input_features_as_lists_in_dict['in_mirgene_db'].append(values['in_mirgene_db'])
             input_features_as_lists_in_dict['false_positive'].append(false_positive)
             input_features_as_lists_in_dict['read_density_map'].append(values['read_density_map'])
@@ -130,11 +132,11 @@ def convert_to_dataframe(input_features, false_positive):
 if __name__ == '__main__':
 
     mirgene_db_known_human_mature_filepath = "resources/known-mature-sequences-h_sapiens.fas"
-    mrd_filepath = "resources/output.mrd"
-    result_filepath = "resources/result_30_10_2023_t_15_05_15.csv"
+    #mrd_filepath = "resources/not_false_positives/output.mrd"
+    #result_filepath = "resources/not_false_positives/result_30_10_2023_t_15_05_15.csv"
     false_positive = False
-    #mrd_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd" #false_positive = False
-    #result_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv"
+    mrd_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd" #false_positive = False
+    result_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv"
 
     #TODO: read in healthy dataset and set false_positive = True
 
@@ -147,7 +149,7 @@ if __name__ == '__main__':
     #print(df[df['location'].str.contains('chrII:11534525-11540624_19')])
     if not false_positive:
         only_relevant_data = df.loc[(df['predicted_as_novel'] == False) & (df['in_mirgene_db'] == True)]
-        only_relevant_data.to_pickle("not_false_positives_small.pkl")
+        only_relevant_data.to_pickle("resources/dataset/not_false_positives_TCGA_LUSC.pkl")
     else:
         only_relevant_data = df.loc[df['predicted_as_novel'] == True]
         only_relevant_data.to_pickle("false_positives_small.pkl")
