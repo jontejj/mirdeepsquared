@@ -5,6 +5,7 @@ import screed # a library for reading in FASTA/FASTQ
 import pandas as pd
 import re
 import numpy as np
+import argparse
 
 def process_mrd_file(mrd_file):
     input_features = {}
@@ -13,8 +14,6 @@ def process_mrd_file(mrd_file):
     pri_struct = ""
     mature_read_count = 0
     star_read_count = 0
-    mm_offset = 0
-    mm_count = 0
     exp = ""
     location_name = ""
     read_density_map = np.zeros(112, dtype=np.int32)
@@ -66,13 +65,19 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
         elif x.startswith("#miRBase miRNAs not detected by miRDeep2"):
             break
         elif not x.startswith("provisional") and not x.startswith("tag") and  not x.startswith("\n") and started:
-              location_name = x.split('\t')[0]
-              data_from_mrd[location_name]["consensus_sequence"] = x.split('\t')[13]
-              data_from_mrd[location_name]["predicted_as_novel"] = is_novel
-              mm_offset = data_from_mrd[location_name]["pri_seq"].index(data_from_mrd[location_name]["consensus_sequence"])
-              mm_struct = data_from_mrd[location_name]["pri_struct"][mm_offset: mm_offset + len(data_from_mrd[location_name]["consensus_sequence"])]
-              data_from_mrd[location_name]["mm_struct"] = mm_struct
-              data_from_mrd[location_name]["mm_offset"] = mm_offset
+            data_for_location = x.split('\t')
+            location_name = data_for_location[0]
+            estimated_probability = data_for_location[2].split(' ')
+            data_from_mrd[location_name]["mirdeep_score"] = float(data_for_location[1])
+            data_from_mrd[location_name]["estimated_probability"] = float(estimated_probability[0])
+            data_from_mrd[location_name]["estimated_probability_uncertainty"] = float(estimated_probability[2][0:-1])
+            data_from_mrd[location_name]["significant_randfold"] = 1 if (data_for_location[8] == 'yes') else 0
+            data_from_mrd[location_name]["consensus_sequence"] = data_for_location[13]
+            data_from_mrd[location_name]["predicted_as_novel"] = is_novel
+            mm_offset = data_from_mrd[location_name]["pri_seq"].index(data_from_mrd[location_name]["consensus_sequence"])
+            mm_struct = data_from_mrd[location_name]["pri_struct"][mm_offset: mm_offset + len(data_from_mrd[location_name]["consensus_sequence"])]
+            data_from_mrd[location_name]["mm_struct"] = mm_struct
+            data_from_mrd[location_name]["mm_offset"] = mm_offset
     #pp = pprint.PrettyPrinter(width=100, compact=True)
     #pp.pprint(input_features)
     #print("Unfiltered size: " + str(len(input_features)))
@@ -109,8 +114,8 @@ def print_stats(input_features):
     filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" in v and v["predicted_as_novel"] == True and v["in_mirgene_db"] == False}
     print("Novel miRNA:s not in mirgene db: " + str(len(filtered_dict)))
 
-def convert_to_dataframe(input_features, false_positive):
-    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "in_mirgene_db" : [], "false_positive" : [], "read_density_map" : []}
+def convert_to_dataframe(input_features):
+    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "estimated_probability" : [], "estimated_probability_uncertainty" : [], "significant_randfold" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "in_mirgene_db" : [], "read_density_map" : []}
     for location, values in input_features.items():
         if 'predicted_as_novel' in values: #Ignore entries not in result.csv
             input_features_as_lists_in_dict['location'].append(location)
@@ -119,38 +124,65 @@ def convert_to_dataframe(input_features, false_positive):
             input_features_as_lists_in_dict['exp'].append(values['exp'])
             input_features_as_lists_in_dict['mature_read_count'].append(values['mature_read_count'])
             input_features_as_lists_in_dict['star_read_count'].append(values['star_read_count'])
+            input_features_as_lists_in_dict['estimated_probability'].append(values['estimated_probability'])
+            input_features_as_lists_in_dict['estimated_probability_uncertainty'].append(values['estimated_probability_uncertainty'])
+            input_features_as_lists_in_dict['significant_randfold'].append(values['significant_randfold'])
             input_features_as_lists_in_dict['consensus_sequence'].append(values['consensus_sequence'])
             input_features_as_lists_in_dict['predicted_as_novel'].append(values['predicted_as_novel'])
             input_features_as_lists_in_dict['mm_struct'].append(values['mm_struct'])
             input_features_as_lists_in_dict['mm_offset'].append(values['mm_offset'])
             input_features_as_lists_in_dict['in_mirgene_db'].append(values['in_mirgene_db'])
-            input_features_as_lists_in_dict['false_positive'].append(false_positive)
             input_features_as_lists_in_dict['read_density_map'].append(values['read_density_map'])
 
     return pd.DataFrame.from_dict(input_features_as_lists_in_dict)
 
-if __name__ == '__main__':
-
-    mirgene_db_known_human_mature_filepath = "resources/known-mature-sequences-h_sapiens.fas"
-    #mrd_filepath = "resources/not_false_positives/output.mrd"
-    #result_filepath = "resources/not_false_positives/result_30_10_2023_t_15_05_15.csv"
-    false_positive = False
-    mrd_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd" #false_positive = False
-    result_filepath = "/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv"
-
-    #TODO: read in healthy dataset and set false_positive = True
-
+def extract_features(mrd_filepath, result_filepath, false_positives, labels, true_positives, mirgene_db_file, pickle_output_file):
     input_features = process_mrd_file(mrd_filepath)
     add_info_from_result_file(result_filepath, input_features)
-    classify_as_in_mirgene_db_or_not(mirgene_db_known_human_mature_filepath, input_features)
+    classify_as_in_mirgene_db_or_not(mirgene_db_file, input_features)
     print_stats(input_features)
-    df = convert_to_dataframe(input_features, false_positive)
+    df = convert_to_dataframe(input_features)
+
+    if false_positives:
+        false_positive_list = set(df['location'].values)
+    elif true_positives:
+        false_positive_list = set()
+    elif labels != None:
+        with open(labels) as file:
+            false_positive_list = set(line.rstrip() for line in file)
+    else:
+        raise ValueError("Expected either of -fp, -tp or -l to be supplied. Unable to label data as false positives")
+
+    df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)
 
     #print(df[df['location'].str.contains('chrII:11534525-11540624_19')])
-    if not false_positive:
+    only_relevant_data = None
+    if true_positives:
         only_relevant_data = df.loc[(df['predicted_as_novel'] == False) & (df['in_mirgene_db'] == True)]
-        only_relevant_data.to_pickle("resources/dataset/not_false_positives_TCGA_LUSC.pkl")
     else:
         only_relevant_data = df.loc[df['predicted_as_novel'] == True]
-        only_relevant_data.to_pickle("false_positives_small.pkl")
+
+    only_relevant_data.to_pickle(pickle_output_file)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='MirDeepSquared-preprocessor', description='Extracts features from result.csv and output.mrd from MiRDeep2 and puts them in dataframes in pickle files')
+
+    parser.add_argument('result_csv') # positional argument
+    parser.add_argument('output_mrd') # positional argument
+    parser.add_argument('pickle_output_file') # positional argument
+    parser.add_argument('-fp', '--false_positives', action='store_true', help="Treat all novel classifications as false positives")
+    parser.add_argument('-tp', '--true_positives', action='store_true', help="Treat all mature classifications as true positives")
+    parser.add_argument('-l', '--labels', help="Manual file with curated false positives in it")
+    parser.add_argument('-m', '--mirgene_db_file', help="File to filter results with")
+
+    args = parser.parse_args()
+    mrd_filepath = args.output_mrd
+    result_filepath = args.result_csv
+    false_positives = args.false_positives
+    labels = args.labels
+    true_positives = args.true_positives
+    mirgene_db_file = args.mirgene_db_file
+    pickle_output_file = args.pickle_output_file
+
+    extract_features(mrd_filepath, result_filepath, false_positives, labels, true_positives, mirgene_db_file, pickle_output_file)
     

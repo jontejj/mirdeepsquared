@@ -1,0 +1,11 @@
+Tweak:
+Batch size:[1, 2, 4, 8, 16, 32, 64, 128, 256]
+Epochs
+Optimizer
+Learning rate scheduler
+kernel_initializers
+bias_initializers
+size of Dense, CNN, Embedding etc
+Batch normalization
+kernel_size for CNN, stride...
+Regularization

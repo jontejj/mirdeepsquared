@@ -16,12 +16,11 @@ if __name__ == '__main__':
     print(df3['location'].values)
     #df = pd.concat([df1, df2], axis=0)
 
-    #TODO: create a 2d structure with pri_struct on one row and mm_struct indented by mm_offset on the second row
     #print(df['mm_struct'])
     #print(df['mm_offset'])
-    pri_struct = "..............(((..(((((((((((((((((((((((.((.(.((((((.(((......))).)))))).))).)))))))))))))))))))))))..)))..."
-    mm_struct = "(((((((((((.((.(.(((((("
-    mm_offset = 60
+    #pri_struct = "..............(((..(((((((((((((((((((((((.((.(.((((((.(((......))).)))))).))).)))))))))))))))))))))))..)))..."
+    #mm_struct = "(((((((((((.((.(.(((((("
+    #mm_offset = 60
     #build_matrix(pri_struct, mm_struct, mm_offset)
     
 
