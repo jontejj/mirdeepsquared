@@ -12,14 +12,17 @@ if __name__ == '__main__':
 
     #df = read_dataframes(["not_false_positives_small.pkl", "false_positives_small.pkl"])
     #df = read_dataframes(["resources/dataset/not_false_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84.pkl"])
-    df = read_dataframes(["resources/dataset/not_false_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
     
     X_train, Y_train, X_val, Y_val, X_test, Y_test = prepare_data(df)
 
-    model = load_model("best-model.keras")
+    model = load_model("best-model-not-seen-test.keras")
+    model.summary()
+
+    #TODO: check feature importance by shuffling values for each column in df and checking the impact on the F1-score
 
     pred = model.predict(X_test)
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
