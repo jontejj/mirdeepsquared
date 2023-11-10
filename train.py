@@ -13,7 +13,8 @@ import pandas as pd
 
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, Dropout
+from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.optimizers.schedules import ExponentialDecay
@@ -73,7 +74,7 @@ def build_structure_1D(pri_struct, mm_struct, mm_offset):
 
     return array_1d
 
-def get_model(consensus_sequences, density_maps, numeric_features, model_size = 64, initial_learning_rate = 0.0003, batch_size = 6, regularize = True):
+def get_model(consensus_sequences, density_maps, numeric_features, model_size = 64, initial_learning_rate = 0.0003, batch_size = 6, regularize = True, dropout_rate=0.8, weight_constraint=3.0):
     max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)
     seq_length = len(max(consensus_sequences, key=len))
 
@@ -111,11 +112,13 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     concatenated = Concatenate()([maxpooling_layer, density_map_dense, numeric_features_dense, flatten_layer_structure])
 
     if regularize:
-        dense_layer = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(concatenated)
-        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
+        dense_layer = Dense(10000, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(concatenated)
+        dropout_layer = Dropout(dropout_rate, input_shape=(10000,))(dense_layer)
+        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
     else:
-        dense_layer = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated)
-        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
+        dense_layer = Dense(10000, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated)
+        dropout_layer = Dropout(dropout_rate, input_shape=(10000,))(dense_layer)
+        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
 
     model = Model(inputs=[input_layer_consensus_sequence, input_layer_density_map, input_layer_numeric_features, input_structure_as_matrix], outputs=output_layer)
 
@@ -164,17 +167,21 @@ def split_data(df):
 def generate_hyperparameter_combinations():
     batch_sizes = [16] #[1, 2, 4, 8, 16, 32, 64, 128, 256] # 
     nr_of_epochs = [100] #[1, 2, 4, 8, 16] # 
-    model_sizes = [64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
+    model_sizes = [8] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
     learning_rates = [0.003] #[0.03, 0.003, 0.0003] # 
     regularize = [True] #[True, False] # 
-    print(f'Will generate {len(batch_sizes) * len(nr_of_epochs) * len(model_sizes) * len(learning_rates) * len(regularize)} combinations of hyperparameters')
+    dropout_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    weight_constraints = [1.0, 2.0, 3.0, 4.0, 5.0]
+    print(f'Will generate {len(batch_sizes) * len(nr_of_epochs) * len(model_sizes) * len(learning_rates) * len(regularize) * len(dropout_rates) * len(weight_constraints)} combinations of hyperparameters')
     parameters = list()
     for batch_size in batch_sizes:
         for epochs in nr_of_epochs:
             for model_size in model_sizes:
                 for lr in learning_rates:
                     for reg in regularize:
-                        parameters.append({'batch_size' : batch_size, 'epochs' : epochs, 'model_size'  : model_size, 'learning_rate' : lr, 'regularize' : reg})
+                        for dropout in dropout_rates:
+                            for weight_constraint in weight_constraints:
+                                parameters.append({'batch_size' : batch_size, 'epochs' : epochs, 'model_size'  : model_size, 'learning_rate' : lr, 'regularize' : reg, 'dropout_rate' : dropout, 'weight_constraint' : weight_constraint})
     
     best_f1_score = 0
     lowest_val_loss = 9223372036854775807
@@ -187,7 +194,7 @@ def generate_hyperparameter_combinations():
             reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
             next(reader, None) #Skip header row
             for row in reader:
-                already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4] == 'True'})
+                already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4] == 'True', 'dropout_rate' : float(row[5]), 'weight_constraint' : float(row[6])})
                 f1_score = float(row[9])
                 if  f1_score > best_f1_score:
                     best_f1_score = f1_score
@@ -206,14 +213,14 @@ def generate_hyperparameter_combinations():
         print("Storing training results in train-results.csv")
         with open('train-results.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'test_accuracy', 'test_F1-score', 'lowest_val_loss', 'max_val_f1_score'])
+            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'dropout_rate', 'weight_constraint', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'test_accuracy', 'test_F1-score', 'lowest_val_loss', 'max_val_f1_score'])
 
     return (parameters, best_f1_score, lowest_val_loss, max_val_f1_score)
 
 def save_result_to_csv(parameters, metrics):
     with open('train-results.csv', 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
+        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
 
 if __name__ == '__main__':
     df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
@@ -231,7 +238,7 @@ if __name__ == '__main__':
     for parameters in parameters:
         print("Parameters: " + str(parameters))
         
-        model = get_model(consensus_sequences=X_train[0], density_maps=X_train[1], numeric_features=X_train[2], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'])
+        model = get_model(consensus_sequences=X_train[0], density_maps=X_train[1], numeric_features=X_train[2], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint = parameters['weight_constraint'])
         
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
         

@@ -30,7 +30,7 @@ if __name__ == '__main__':
     model = Sequential()
     model.add(Embedding(input_dim=8, output_dim=128, input_length=112))
     model.add(Bidirectional(LSTM(128)))
-    model.add(Dropout(0.2, input_shape=(256,)))
+    model.add(Dropout(0.8, input_shape=(256,)))
     model.add(Dense(1, activation='sigmoid'))
     #TODO: try tf.keras.optimizers.RMSprop(learning_rate=0.1)
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy'])
