@@ -138,13 +138,16 @@ def prepare_data(df):
     df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
     df['consensus_sequence_as_sentence'] = df.apply(lambda x: ' '.join(x['consensus_sequence_kmers']), axis=1)
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + epsilon), axis=1)
+    df['structure_as_matrix'] = df.apply(lambda x: build_matrix(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
 
+    return df
+
+def split_data(df):
     consensus_texts = df['consensus_sequence_as_sentence'].values.tolist()
     density_maps = df['read_density_map'].values.tolist()
     numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio', 'estimated_probability', 'estimated_probability_uncertainty']
     numeric_features = df[numeric_feature_names]
 
-    df['structure_as_matrix'] = df.apply(lambda x: build_matrix(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
     structure_as_matrix = df['structure_as_matrix'].values.tolist()
     y_data = df['false_positive'].values.astype(np.float32)
 
@@ -163,9 +166,9 @@ def prepare_data(df):
 def generate_hyperparameter_combinations():
     batch_sizes = [16] #[1, 2, 4, 8, 16, 32, 64, 128, 256] # 
     nr_of_epochs = [100] #[1, 2, 4, 8, 16] # 
-    model_sizes = [8, 64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
-    learning_rates = [0.003, 0.0003] #[0.03, 0.003, 0.0003] # 
-    regularize = [True, False] # [True] #
+    model_sizes = [8] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
+    learning_rates = [0.003] #[0.03, 0.003, 0.0003] # 
+    regularize = [True] #[True, False] # 
     print(f'Will generate {len(batch_sizes) * len(nr_of_epochs) * len(model_sizes) * len(learning_rates) * len(regularize)} combinations of hyperparameters')
     parameters = list()
     for batch_size in batch_sizes:
@@ -186,7 +189,7 @@ def generate_hyperparameter_combinations():
             reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
             next(reader, None) #Skip header row
             for row in reader:
-                already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4]})
+                already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4] == 'True'})
                 f1_score = float(row[9])
                 if  f1_score > best_f1_score:
                     best_f1_score = f1_score

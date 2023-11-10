@@ -1,4 +1,4 @@
-from train import prepare_data, read_dataframes
+from train import read_dataframes, prepare_data, split_data
 from tensorflow import keras
 from keras.saving import load_model
 
@@ -17,12 +17,10 @@ if __name__ == '__main__':
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
     
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = prepare_data(df)
+    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
 
     model = load_model("best-model-not-seen-test.keras")
     model.summary()
-
-    #TODO: check feature importance by shuffling values for each column in df and checking the impact on the F1-score
 
     pred = model.predict(X_test)
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
