@@ -10,7 +10,7 @@ from statistics import mean
 if __name__ == '__main__':
 
     used_features= ['mature_read_count', 'star_read_count', 'estimated_probability', 'estimated_probability_uncertainty', 'significant_randfold', 'consensus_sequence_as_sentence',
-       'mature_vs_star_read_ratio', 'structure_as_matrix']
+       'mature_vs_star_read_ratio', 'structure_as_1D_array']
 
     model = load_model("best-model-not-seen-test.keras")
 
