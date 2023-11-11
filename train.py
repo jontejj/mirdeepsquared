@@ -13,7 +13,7 @@ import pandas as pd
 
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, Dropout
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional 
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -103,11 +103,14 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
 
     #Input 4 - structural information
     input_structure_as_matrix = Input(shape=(112,), dtype='float32', name='structure_as_1D_array')
-    reshaped_as_matrix = Reshape((8, 14, 1), input_shape=(112,))(input_structure_as_matrix)
+    structure_embedding = Embedding(input_dim=8, output_dim=(model_size * 4), input_length=112)(input_structure_as_matrix)
+    structure_lstm = Bidirectional(LSTM(model_size * 4))(structure_embedding)
+
+    #reshaped_as_matrix = Reshape((8, 14, 1), input_shape=(112,))(input_structure_as_matrix)
     #TODO: Normalize input_structure_as_matrix?
-    conv2d_layer = Conv2D(64, kernel_size=(3, 3), activation='relu', input_shape=(batch_size, 8, 14, 1), padding='same')(reshaped_as_matrix)
-    matrix_dense = Dense(model_size, activation='relu')(conv2d_layer)
-    flatten_layer_structure = Flatten()(matrix_dense)
+    #conv2d_layer = Conv2D(64, kernel_size=(3, 3), activation='relu', input_shape=(batch_size, 8, 14, 1), padding='same')(reshaped_as_matrix)
+    #matrix_dense = Dense(model_size, activation='relu')(conv2d_layer)
+    flatten_layer_structure = Flatten()(structure_lstm) #matrix_dense
 
     concatenated = Concatenate()([maxpooling_layer, density_map_dense, numeric_features_dense, flatten_layer_structure])
 
@@ -138,6 +141,10 @@ def prepare_data(df):
     #From https://github.com/dhanush77777/DNA-sequencing-using-NLP/blob/master/DNA%20sequencing.ipynb
     df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
     df['consensus_sequence_as_sentence'] = df.apply(lambda x: ' '.join(x['consensus_sequence_kmers']), axis=1)
+    #TODO: create other features for mature vs star, such as:
+    #feature_difference = feature1 - feature2
+    #feature_interaction = feature1 * feature2
+    #feature_log = np.log(feature1) or np.log(feature1) / np.log(feature2)
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + epsilon), axis=1)
     df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
     return df
@@ -167,7 +174,7 @@ def split_data(df):
 def generate_hyperparameter_combinations():
     batch_sizes = [16] #[1, 2, 4, 8, 16, 32, 64, 128, 256] # 
     nr_of_epochs = [100] #[1, 2, 4, 8, 16] # 
-    model_sizes = [8] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
+    model_sizes = [8, 16, 64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
     learning_rates = [0.003] #[0.03, 0.003, 0.0003] # 
     regularize = [True] #[True, False] # 
     dropout_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]

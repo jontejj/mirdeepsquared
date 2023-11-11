@@ -6,16 +6,21 @@ import os
 import pandas as pd
 import re
 import numpy as np
-
+import _thread
 
     
 if __name__ == '__main__':
     #df1 = pd.read_pickle("not_false_positives_small.pkl")
     #df2 = pd.read_pickle("false_positives_small.pkl")
-    df3 = pd.read_pickle("resources/dataset/not_false_positives_TCGA_LUSC.pkl")
+    df3 = pd.read_pickle("resources/dataset/true_positives_TCGA_LUSC.pkl")
     print(df3['location'].values)
     #df = pd.concat([df1, df2], axis=0)
 
+
+
+    a_lock = _thread.allocate_lock()
+    with a_lock:
+        print("a_lock is locked while this executes")
     #print(df['mm_struct'])
     #print(df['mm_offset'])
     #pri_struct = "..............(((..(((((((((((((((((((((((.((.(.((((((.(((......))).)))))).))).)))))))))))))))))))))))..)))..."
