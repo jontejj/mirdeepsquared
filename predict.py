@@ -19,7 +19,7 @@ if __name__ == '__main__':
     #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
     model = load_model("train-simple-model.keras") #load_model("best-model-not-seen-test.keras")
 
-    pred = model.predict(X_test[3]) #X_test
+    pred = model.predict(X_test[1]) #X_test
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
     print("Confusion matrix:")
     print(confusion_matrix(Y_test,pred))

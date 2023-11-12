@@ -13,7 +13,7 @@ if __name__ == '__main__':
     #df1 = pd.read_pickle("not_false_positives_small.pkl")
     #df2 = pd.read_pickle("false_positives_small.pkl")
     df3 = pd.read_pickle("resources/dataset/true_positives_TCGA_LUSC.pkl")
-    print(df3['location'].values)
+    print(df3['read_density_map'].values[0])
     #df = pd.concat([df1, df2], axis=0)
 
 

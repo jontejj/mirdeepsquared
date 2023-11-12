@@ -9,8 +9,9 @@ from statistics import mean
 
 if __name__ == '__main__':
 
-    used_features= ['mature_read_count', 'star_read_count', 'estimated_probability', 'estimated_probability_uncertainty', 'significant_randfold', 'consensus_sequence_as_sentence',
-       'mature_vs_star_read_ratio', 'structure_as_1D_array']
+    #, 'estimated_probability', 'estimated_probability_uncertainty',
+    used_features= ['mature_read_count', 'star_read_count', 'significant_randfold', 'consensus_sequence_as_sentence',
+       'mature_vs_star_read_ratio', 'structure_as_1D_array', 'read_density_map_percentage_change']
 
     model = load_model("best-model-not-seen-test.keras")
 

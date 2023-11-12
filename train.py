@@ -29,6 +29,7 @@ import csv
 
 KMER_SIZE = 6
 NUCLEOTIDE_NR = 5 #U C A G D (D for Dummy)
+EPSILON = 1e-7
 
 def build_kmers(sequence, ksize):
     kmers = []
@@ -90,13 +91,12 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     #batch_norm_layer = BatchNormalization(trainable=True)(maxpooling_layer) #TODO: remember to set trainable=False when inferring
     
     #Input 2 - density maps
-    input_layer_density_map = Input(shape=(112,), dtype='int32', name='density_map')
+    input_layer_density_map = Input(shape=(111,), dtype='int32', name='density_map_rate_of_change')
     density_map_normalizer_layer = Normalization(mean=np.mean(density_maps, axis=0), variance=np.var(density_maps, axis=0))(input_layer_density_map)
-    #TODO: use 1d CNN for the density maps
     density_map_dense = Dense(model_size, activation='relu')(density_map_normalizer_layer)
 
-    #Input 3 - numerical features
-    input_layer_numeric_features = Input(shape=(6,), dtype='float32', name='numeric_features')
+    #Input 3 - numerical features #TODO: 6?
+    input_layer_numeric_features = Input(shape=(4,), dtype='float32', name='numeric_features')
     normalizer_layer = Normalization()
     normalizer_layer.adapt(numeric_features)
     numeric_features_dense = Dense(model_size, activation='relu')(normalizer_layer(input_layer_numeric_features))
@@ -136,8 +136,15 @@ def read_dataframes(paths):
 
     return pd.concat(dfs, axis=0)
 
+def calc_percentage_change(numbers):
+    #np.diff(numbers) = rate of change
+    data_no_zeros = np.where(numbers == 0, EPSILON, numbers)
+    percentage_change = np.diff(numbers) / data_no_zeros[:-1] * 100
+    return percentage_change
+    
+
 def prepare_data(df):
-    epsilon = 1e-7
+    
     #From https://github.com/dhanush77777/DNA-sequencing-using-NLP/blob/master/DNA%20sequencing.ipynb
     df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
     df['consensus_sequence_as_sentence'] = df.apply(lambda x: ' '.join(x['consensus_sequence_kmers']), axis=1)
@@ -145,14 +152,15 @@ def prepare_data(df):
     #feature_difference = feature1 - feature2
     #feature_interaction = feature1 * feature2
     #feature_log = np.log(feature1) or np.log(feature1) / np.log(feature2)
-    df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + epsilon), axis=1)
+    df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
     df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
+    df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
     return df
 
 def split_data(df):
     consensus_texts = df['consensus_sequence_as_sentence'].values.tolist()
-    density_maps = df['read_density_map'].values.tolist()
-    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio', 'estimated_probability', 'estimated_probability_uncertainty']
+    density_maps = df['read_density_map_percentage_change'].values.tolist()
+    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio'] #, 'estimated_probability', 'estimated_probability_uncertainty'
     numeric_features = df[numeric_feature_names]
 
     structure_as_1D_array = df['structure_as_1D_array'].values.tolist()
