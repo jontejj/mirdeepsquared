@@ -2,6 +2,7 @@
 **/*.pkl
 .vscode/**
 __pycache__/**
+dist/**
 miRNA.code-workspace/
 **/*.keras
 train-results*.csv

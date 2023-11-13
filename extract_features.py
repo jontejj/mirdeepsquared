@@ -1,6 +1,5 @@
 import os
 import pprint
-from numpy.core.multiarray import empty
 import screed # a library for reading in FASTA/FASTQ
 import pandas as pd
 import re
