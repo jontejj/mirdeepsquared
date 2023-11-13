@@ -1,27 +1,25 @@
-from train import read_dataframes, prepare_data, split_data
-from tensorflow import keras
+import argparse
+from extract_features import extract_features
+from train import prepare_data
+import numpy as np
 from keras.saving import load_model
 
-import numpy as np
-
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
-
 if __name__ == '__main__':
-    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    parser = argparse.ArgumentParser(prog='MirDeepSquared-predict', description='Classifies novel miRNA sequences either as false positive or not based on the result.csv and output.mrd files from MiRDeep2. Each row of the standard output represents the location name of the true positives')
 
-    print("False positives:" + str(len(df[(df['false_positive']==True)])))
-    print("True positives:" + str(len(df[(df['false_positive']==False)])))
-    
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
+    parser.add_argument('result_csv') # positional argument
+    parser.add_argument('output_mrd') # positional argument
+    #TODO: add batch-size as argument or automatically calculate it?
+    args = parser.parse_args()
+    mrd_filepath = args.output_mrd
+    result_filepath = args.result_csv
+    df = extract_features(mrd_filepath, result_filepath)
+    df = prepare_data(df)
+    novel_slice = df.loc[df['predicted_as_novel'] == True]
+    X = np.asarray(novel_slice['read_density_map_percentage_change'].values.tolist())
 
-    #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
+    #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)?
     model = load_model("train-simple-model.keras") #load_model("best-model-not-seen-test.keras")
-
-    pred = model.predict(X_test[1]) #X_test
+    pred = model.predict(X, verbose=0)
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
-    print("Confusion matrix:")
-    print(confusion_matrix(Y_test,pred))
-    print("Accuracy: " + str(accuracy_score(Y_test,pred)))
-    print("F1-score: " + str(f1_score(Y_test,pred)))
+    [print(location) for location, pred in zip(novel_slice['location'], pred) if pred == False]

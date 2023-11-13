@@ -9,7 +9,7 @@ from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Gl
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from train import read_dataframes, prepare_data, split_data
+from train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
 from tensorflow import keras
 from keras.saving import load_model
 
@@ -21,7 +21,7 @@ from sklearn.metrics import f1_score
 
 if __name__ == '__main__':
 
-    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
 
     X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
     numeric_features=X_train[2]

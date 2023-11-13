@@ -7,6 +7,7 @@ tf.config.experimental.enable_op_determinism()
 
 import os
 import screed # a library for reading in FASTA/FASTQ
+import glob
 
 import numpy as np
 import pandas as pd
@@ -129,6 +130,9 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     model.compile(optimizer=Adam(learning_rate=lr_schedule), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
     return model
 
+def list_of_pickle_files_in(path):
+    return glob.glob(path + "/*.pkl")
+
 def read_dataframes(paths):
     dfs = []
     for path in paths:
@@ -238,7 +242,7 @@ def save_result_to_csv(parameters, metrics):
         writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
 
 if __name__ == '__main__':
-    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))

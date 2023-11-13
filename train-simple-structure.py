@@ -15,7 +15,7 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
-from train import read_dataframes, prepare_data, split_data
+from train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
 from tensorflow import keras
 from keras.saving import load_model
 
@@ -24,7 +24,7 @@ from keras.layers import LSTM, Dense, Embedding, Bidirectional, Dropout
 
 if __name__ == '__main__':
 
-    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
     X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
 
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925

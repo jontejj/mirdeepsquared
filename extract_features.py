@@ -7,7 +7,12 @@ import re
 import numpy as np
 import argparse
 
-def process_mrd_file(mrd_file):
+def extract_features(mrd_filepath, result_filepath):
+    input_features = process_mrd_file(mrd_filepath)
+    add_info_from_result_file(result_filepath, input_features)
+    return convert_to_dataframe(input_features)
+
+def process_mrd_file(mrd_filepath):
     input_features = {}
     mrd = open(mrd_filepath, "r")
     pri_seq = ""
@@ -59,6 +64,7 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
     for x in result_file:
         if x.startswith("novel miRNAs predicted by miRDeep2"):
             started = True
+            #TODO: can this be gotten from the lack of "miRNA with same seed" in output.mrd instead?
             is_novel = True
         elif x.startswith("mature miRBase miRNAs detected by miRDeep2"):
             is_novel = False
@@ -83,39 +89,9 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
     #print("Unfiltered size: " + str(len(input_features)))
     result_file.close()
 
-def classify_as_in_mirgene_db_or_not(mirgene_db_filepath, input_features):
-    mirgene_sequences = set()
-    for record in screed.open(mirgene_db_filepath):
-        mirgene_sequences.add(record.sequence.lower())
-        
-    for key in input_features:
-        part_of_sequence_is_in_mirgene_db = False
-        sample_sequence = input_features[key]["pri_seq"].lower()
-        for mirgene_sequence in mirgene_sequences:
-            if mirgene_sequence in sample_sequence:
-                part_of_sequence_is_in_mirgene_db = True
-                break
-        input_features[key]["in_mirgene_db"] = part_of_sequence_is_in_mirgene_db
-
-def print_stats(input_features):
-
-    novel_filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" in v and v["predicted_as_novel"]}
-    print("Novel size: " + str(len(novel_filtered_dict)))
-
-    filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" in v and v["predicted_as_novel"] == False}
-    print("Mature size: " + str(len(filtered_dict)))
-
-    filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" not in v}
-    print("Neither novel nor mature size: " + str(len(filtered_dict)))
-
-    filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" in v and v["predicted_as_novel"] == False and v["in_mirgene_db"] == False}
-    print("Mature miRNA:s not in mirgene db: " + str(len(filtered_dict)))
-
-    filtered_dict = {k: v for k, v in input_features.items() if "predicted_as_novel" in v and v["predicted_as_novel"] == True and v["in_mirgene_db"] == False}
-    print("Novel miRNA:s not in mirgene db: " + str(len(filtered_dict)))
-
 def convert_to_dataframe(input_features):
-    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "estimated_probability" : [], "estimated_probability_uncertainty" : [], "significant_randfold" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "in_mirgene_db" : [], "read_density_map" : []}
+    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "estimated_probability" : [], "estimated_probability_uncertainty" : [], "significant_randfold" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "read_density_map" : []}
+    ignored_entries = 0
     for location, values in input_features.items():
         if 'predicted_as_novel' in values: #Ignore entries not in result.csv
             input_features_as_lists_in_dict['location'].append(location)
@@ -131,18 +107,41 @@ def convert_to_dataframe(input_features):
             input_features_as_lists_in_dict['predicted_as_novel'].append(values['predicted_as_novel'])
             input_features_as_lists_in_dict['mm_struct'].append(values['mm_struct'])
             input_features_as_lists_in_dict['mm_offset'].append(values['mm_offset'])
-            input_features_as_lists_in_dict['in_mirgene_db'].append(values['in_mirgene_db'])
             input_features_as_lists_in_dict['read_density_map'].append(values['read_density_map'])
-
+        else:
+            ignored_entries += 1
+    #TODO: enable this printout?
+    #print(f'{ignored_entries} sequences were not in the result.csv file, ignoring them')
     return pd.DataFrame.from_dict(input_features_as_lists_in_dict)
 
-def extract_features(mrd_filepath, result_filepath, false_positives, labels, true_positives, mirgene_db_file, pickle_output_file):
-    input_features = process_mrd_file(mrd_filepath)
-    add_info_from_result_file(result_filepath, input_features)
-    classify_as_in_mirgene_db_or_not(mirgene_db_file, input_features)
-    print_stats(input_features)
-    df = convert_to_dataframe(input_features)
+def print_basic_stats(df):
+    print("Novel sequences: " + str(len(df[(df['predicted_as_novel'] == True)])))
+    print("Mature sequences: " + str(len(df[(df['predicted_as_novel'] == False)])))
 
+def read_in_mirgene_db_sequences(mirgene_db_filepath):
+    mirgene_sequences = set()
+    for record in screed.open(mirgene_db_filepath):
+        mirgene_sequences.add(record.sequence.lower())
+    return mirgene_sequences
+
+def has_mirgene_db_sequence_in_it(sequence, mirgene_sequences):
+    for mirgene_sequence in mirgene_sequences:
+        if mirgene_sequence in sequence:
+            return True
+    return False
+
+def filter_out_sequences_not_in_mirgene_db(df, mirgene_db_file):
+    mirgene_db_sequences = read_in_mirgene_db_sequences(mirgene_db_file)
+    df['in_mirgene_db'] = df.apply(lambda x: has_mirgene_db_sequence_in_it(x['pri_seq'].lower(), mirgene_db_sequences), axis=1)
+    print_mirgene_db_stats(df)
+    df = df.loc[(df['in_mirgene_db'] == True)]
+    df = df.drop('in_mirgene_db', axis=1)
+
+def print_mirgene_db_stats(df):
+    print("Novel sequences not in mirgene db: " + str(len(df[(df['predicted_as_novel'] == True) & (df['in_mirgene_db'] == False)])))
+    print("Mature sequences not in mirgene db: " + str(len(df[(df['predicted_as_novel'] == False) & (df['in_mirgene_db'] == False)])))
+
+def label_false_positive(df, false_positives, labels, true_positives):
     if false_positives:
         false_positive_list = set(df['location'].values)
     elif true_positives:
@@ -153,16 +152,17 @@ def extract_features(mrd_filepath, result_filepath, false_positives, labels, tru
     else:
         raise ValueError("Expected either of -fp, -tp or -l to be supplied. Unable to label data as false positives")
 
-    df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)
+    df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)    
 
     #print(df[df['location'].str.contains('chrII:11534525-11540624_19')])
     only_relevant_data = None
     if true_positives:
-        only_relevant_data = df.loc[(df['predicted_as_novel'] == False) & (df['in_mirgene_db'] == True)]
-    else:
+        only_relevant_data = df.loc[(df['predicted_as_novel'] == False)]
+    elif false_positives:
         only_relevant_data = df.loc[df['predicted_as_novel'] == True]
+    #For a manually curated file (labels != None), all data is relevant
 
-    only_relevant_data.to_pickle(pickle_output_file)
+    return only_relevant_data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='MirDeepSquared-preprocessor', description='Extracts features from result.csv and output.mrd from MiRDeep2 and puts them in dataframes in pickle files')
@@ -184,5 +184,11 @@ if __name__ == '__main__':
     mirgene_db_file = args.mirgene_db_file
     pickle_output_file = args.pickle_output_file
 
-    extract_features(mrd_filepath, result_filepath, false_positives, labels, true_positives, mirgene_db_file, pickle_output_file)
+    df = extract_features(mrd_filepath, result_filepath)
+    print_basic_stats(df)
+    if mirgene_db_file != None:
+        filter_out_sequences_not_in_mirgene_db(df, mirgene_db_file)
+
+    df = label_false_positive(df, false_positives, labels, true_positives)
+    df.to_pickle(pickle_output_file)
     

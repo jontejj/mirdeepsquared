@@ -1,4 +1,8 @@
 .DS_Store
 **/*.pkl
 .vscode/**
+__pycache__/**
 miRNA.code-workspace/
+**/*.keras
+train-results*.csv
+resources/not_version_controlled/**

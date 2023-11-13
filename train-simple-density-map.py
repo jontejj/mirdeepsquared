@@ -9,7 +9,7 @@ from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Gl
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from train import read_dataframes, prepare_data, split_data
+from train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
 from tensorflow import keras
 from keras.saving import load_model
 
@@ -24,11 +24,12 @@ from sklearn.metrics import f1_score
 #percentage_change test accuracy was 1.0
 if __name__ == '__main__':
 
-    df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
 
     X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
     density_maps=X_train[1]
 
+    #TODO: also use "exp" feature so that the model can understand if the slope is for the mature or the star sequence
     input = Input(shape=(111,), dtype='int32', name='density_map')
     density_map_normalizer_layer = Normalization(mean=np.mean(density_maps, axis=0), variance=np.var(density_maps, axis=0))(input)
     dense_layer = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=2.5, seed=42))(density_map_normalizer_layer)
