@@ -39,7 +39,10 @@ SRR2496783.fastq hh3
 SRR2496784.fastq hh4
 ```
 
-A bowtie index (GRCh38) for the human genome was built with https://bowtie-bio.sourceforge.net/manual.shtml.
+A bowtie index (GRCh38 (from https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.39/)) for the human genome was built with https://bowtie-bio.sourceforge.net/manual.shtml:
+```
+bowtie-build GRCh38.p13.genome.fa GRCh38 --threads 8
+```
 
 Then mapper.pl (from miRDeep2) was used to create ```healthy_reads_collapsed.fa``` and ```healthy_reads_collapsed_vs_genome.arf``` from the reads:
 ```
@@ -66,3 +69,5 @@ python extract_features.py false_positives/result_08_11_2023_t_19_35_00.csv fals
 As the resulting dataset files, ```true_positives_TCGA_LUSC.pkl``` and ```false_positives_SRR2496781-84_bigger.pkl```, were small, they were checked into git in resources/dataset/ in order to make future training easier for people who want to improve the model. On top of this, the output.mrd and the result.csv for the false positives were also checked in to git.
 
 The different train*.py files contain different models with varying performance. The best one so far is ```train-simple-density-map.py```, it gave 100% accuracy on the test set.
+
+To test how well the model generalizes a dataset was also created for Zebrafish (Danio rerio). Reference genome: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000002035.6/, accesision files: https://www.ncbi.nlm.nih.gov/Traces/study/?page=6&query_key=1&WebEnv=MCID_654de450ecadc040f52345a9&f=assay_type_s%3An%3Amirna-seq%3Ac&o=run_file_create_date_dt%3Ad%253Bacc_s%3Bacc_s%3Aa&s=SRR8305633,SRR6411465,SRR8305629,SRR8305619,SRR10358540,SRR6411467,SRR6411468,SRR6411466,SRR15498151,SRR15498149,SRR11974581,SRR11974578.
