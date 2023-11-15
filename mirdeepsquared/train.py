@@ -159,25 +159,23 @@ def prepare_data(df):
     return df
 
 def split_data(df):
+    train=df.sample(frac=0.6,random_state=42)
+    tmp=df.drop(train.index)
+    val=tmp.sample(frac=0.5,random_state=42)
+    test=tmp.drop(val.index)
+
+    return (train, val, test)
+
+def to_xy_with_location(df):
     locations = df['location'].values.tolist()
-    consensus_texts = df['consensus_sequence_as_sentence'].values.tolist()
-    density_maps = df['read_density_map_percentage_change'].values.tolist()
+    consensus_texts = np.asarray(df['consensus_sequence_as_sentence'].values.tolist())
+    density_maps = np.asarray(df['read_density_map_percentage_change'].values.tolist())
     numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio'] #, 'estimated_probability', 'estimated_probability_uncertainty'
-    numeric_features = df[numeric_feature_names]
+    numeric_features = np.asarray(df[numeric_feature_names])
 
-    structure_as_1D_array = df['structure_as_1D_array'].values.tolist()
-    y_data = df['false_positive'].values.astype(np.float32)
-
-    # Split the data into training and temporary set (combined validation and test)
-    X1_train, X1_tmp, X2_train, X2_tmp, X3_train, X3_tmp, X4_train, X4_tmp, Y_train, y_tmp, locations_train, locations_tmp = train_test_split(consensus_texts, density_maps, numeric_features, structure_as_1D_array, y_data, locations, test_size=0.4, random_state=42)
-    
-    # Split the temporary set into validation and test sets
-    X1_test, X1_val, X2_test, X2_val, X3_test, X3_val, X4_test, X4_val, Y_test, Y_val, locations_test, locations_val = train_test_split(X1_tmp, X2_tmp, X3_tmp, X4_tmp, y_tmp, locations_tmp, test_size=0.5, random_state=42)
-
-    X_train = np.asarray(X1_train), np.asarray(X2_train), np.asarray(X3_train), np.asarray(X4_train)
-    X_val = [np.asarray(X1_val), np.asarray(X2_val), np.asarray(X3_val), np.asarray(X4_val)]
-    X_test = [np.asarray(X1_test), np.asarray(X2_test), np.asarray(X3_test), np.asarray(X4_test)]
-    return (X_train, np.asarray(Y_train), X_val, np.asarray(Y_val), X_test, np.asarray(Y_test), locations_train, locations_val, locations_test)
+    structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
+    y_data = np.asarray(df['false_positive'].values.astype(np.float32))
+    return (consensus_texts, density_maps, numeric_features, structure_as_1D_array), y_data, locations
 
 #Best on test set (99.4%): batch_sizes = [16], nr_of_epochs = [8], model_sizes = [16], learning_rates = [0.0003], regularize = [False] (cheated though, because the hyperparameters were tuned against the test set)
 #When max_val_f1_score was used the best parameters were: batch_sizes = [16], nr_of_epochs = [100], model_sizes = [64], learning_rates = [0.003], regularize = [True]
@@ -247,15 +245,15 @@ def parse_args(args):
 
     return parser.parse_args(args)
 
-def main():
-    args = parse_args(sys.argv[1:])
-    df = read_dataframes(list_of_pickle_files_in(args.dataset_path))
+def train_main(dataset_path, model_output_path):
+    df = read_dataframes(list_of_pickle_files_in(dataset_path))
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
-
-    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
-
+    train, val, test = split_data(prepare_data(df))
+    X_train, Y_train, _ = to_xy_with_location(train)
+    X_val, Y_val, _ = to_xy_with_location(val)
+    X_test, Y_test, _ = to_xy_with_location(test)
     parameters, best_f1_score, stored_lowest_val_loss, stored_max_val_f1_score = generate_hyperparameter_combinations()
 
     best_model = None
@@ -282,10 +280,16 @@ def main():
             best_model = model
             best_parameters = parameters
             best_metrics = metrics
-            best_model.save(args.output)
+            best_model.save(model_output_path)
 
     print("Best parameters: " + str(best_parameters))
     print("Best metrics: " + str(best_metrics))
+    return (best_model, best_metrics['history'])
+
+def main():
+    args = parse_args(sys.argv[1:])
+    train_main(args.dataset_path, args.output)
+    
     
 if __name__ == '__main__':
     main()

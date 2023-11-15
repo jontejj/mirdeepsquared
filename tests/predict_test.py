@@ -8,7 +8,8 @@ from mirdeepsquared.train import list_of_pickle_files_in, read_dataframes
 from mirdeepsquared.train_simple_density_map import train_density_map
 import shutil, tempfile
 from os import path
-from mirdeepsquared.predict import parse_args, predict_main
+from mirdeepsquared.predict import predict_main
+from mirdeepsquared.predict_cmd import parse_args
 
 class TestPredict:
 

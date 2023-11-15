@@ -5,7 +5,7 @@ from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Gl
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from .train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
+from mirdeepsquared.train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
 from keras.saving import load_model
 
 import numpy as np
@@ -15,7 +15,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 
 def train_simple_numerical_features(df):
-    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
+    train, val, _ = split_data(prepare_data(df))
+    X_train, Y_train, _ = to_xy_with_location(train)
+    X_val, Y_val, _ = to_xy_with_location(val)
     numeric_features=X_train[2]
 
     single_numeric_data = numeric_features[ :,4].reshape(-1, 1) #Estimated probability

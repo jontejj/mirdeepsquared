@@ -4,7 +4,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 #TODO: put these methods in another file to improve boot time when predicting
-from mirdeepsquared.train import read_dataframes, prepare_data, split_data
+from mirdeepsquared.train import read_dataframes, prepare_data, split_data, to_xy_with_location
 
 if __name__ == '__main__':
     df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
@@ -12,8 +12,8 @@ if __name__ == '__main__':
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
     
-    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
-
+    train, val, test = split_data(prepare_data(df))
+    X_test, Y_test, locations_test = to_xy_with_location(test)
     #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
     model = load_model("train-simple-model.keras") #load_model("best-model-not-seen-test.keras")
 

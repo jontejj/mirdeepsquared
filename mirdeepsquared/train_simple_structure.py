@@ -11,15 +11,17 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
-from .train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
+from mirdeepsquared.train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
 from keras.saving import load_model
 
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Embedding, Bidirectional, Dropout
 
 def train_simple_structure(df):
-    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
-
+    train, val, _ = split_data(prepare_data(df))
+    X_train, Y_train, _ = to_xy_with_location(train)
+    X_val, Y_val, _ = to_xy_with_location(val)
+    
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.0001
     l2_strength = 0.001 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
