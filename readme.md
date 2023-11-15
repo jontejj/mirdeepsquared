@@ -2,10 +2,12 @@
 Mirdeepsquared uses a deep learning model that predicts if novel miRNA sequences in the output of miRDeep2 are false positives or not. This greatly reduces the amount of manual work that is currently needed to filter out the false positives.
 
 ## Usage (with pip install)
+```
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
-pip install mirdeepsquared==0.1.1
+pip install mirdeepsquared
 predict path/to/your_result.csv path/to/your_output.mrd
+```
 
 The output are your true positives (i.e likely to actually be novel miRNA:s)
 
