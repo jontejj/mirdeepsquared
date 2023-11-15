@@ -185,7 +185,7 @@ def generate_hyperparameter_combinations():
     model_sizes = [8, 16, 64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
     learning_rates = [0.003] #[0.03, 0.003, 0.0003] # 
     regularize = [True] #[True, False] # 
-    dropout_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    dropout_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
     weight_constraints = [1.0, 2.0, 3.0, 4.0, 5.0]
     print(f'Will generate {len(batch_sizes) * len(nr_of_epochs) * len(model_sizes) * len(learning_rates) * len(regularize) * len(dropout_rates) * len(weight_constraints)} combinations of hyperparameters')
     parameters = list()
