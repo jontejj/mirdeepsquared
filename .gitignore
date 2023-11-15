@@ -2,8 +2,11 @@
 **/*.pkl
 .vscode/**
 __pycache__/**
+mirdeepsquared/__pycache__/**
+tests/__pycache__/**
 dist/**
 miRNA.code-workspace/
 **/*.keras
 train-results*.csv
 resources/not_version_controlled/**
+mirdeepsquared.egg-info/**

@@ -3,10 +3,6 @@ import datetime
 from keras.constraints import MaxNorm
 from keras.src.optimizers.schedules.learning_rate_schedule import ExponentialDecay
 from tensorflow import keras
-#Make training reproducable
-keras.utils.set_random_seed(42)
-import tensorflow as tf
-tf.config.experimental.enable_op_determinism()
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, AveragePooling1D, MaxPooling1D, MaxPooling2D, GlobalAveragePooling2D
@@ -15,17 +11,14 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
-from train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
-from tensorflow import keras
+from .train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
 from keras.saving import load_model
 
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Embedding, Bidirectional, Dropout
 
-if __name__ == '__main__':
-
-    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
+def train_simple_structure(df):
+    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
 
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.0001
@@ -78,8 +71,4 @@ if __name__ == '__main__':
     #Resume and improve accuracy
     #model = load_model("train-simple-model.keras")
     history = model.fit(X_train[3], Y_train, epochs=200, batch_size=16, validation_data=(X_val[3], Y_val), callbacks=[early_stopping])
-
-    print(history.history)
-    model.save("train-simple-model.keras")
-
-    print("Max accuracy on val: " + str(max(history.history['val_accuracy'])))
+    return (model, history)

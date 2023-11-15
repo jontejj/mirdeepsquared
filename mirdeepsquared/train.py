@@ -1,10 +1,3 @@
-from tensorflow import keras
-
-#Make training reproducable
-keras.utils.set_random_seed(42)
-import tensorflow as tf
-tf.config.experimental.enable_op_determinism()
-
 import os
 import screed # a library for reading in FASTA/FASTQ
 import glob
@@ -12,6 +5,7 @@ import glob
 import numpy as np
 import pandas as pd
 
+from tensorflow import keras
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional 
@@ -162,6 +156,7 @@ def prepare_data(df):
     return df
 
 def split_data(df):
+    locations = df['location'].values.tolist()
     consensus_texts = df['consensus_sequence_as_sentence'].values.tolist()
     density_maps = df['read_density_map_percentage_change'].values.tolist()
     numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio'] #, 'estimated_probability', 'estimated_probability_uncertainty'
@@ -171,15 +166,15 @@ def split_data(df):
     y_data = df['false_positive'].values.astype(np.float32)
 
     # Split the data into training and temporary set (combined validation and test)
-    X1_train, X1_tmp, X2_train, X2_tmp, X3_train, X3_tmp, X4_train, X4_tmp, Y_train, y_tmp = train_test_split(consensus_texts, density_maps, numeric_features, structure_as_1D_array, y_data, test_size=0.4, random_state=42)
+    X1_train, X1_tmp, X2_train, X2_tmp, X3_train, X3_tmp, X4_train, X4_tmp, Y_train, y_tmp, locations_train, locations_tmp = train_test_split(consensus_texts, density_maps, numeric_features, structure_as_1D_array, y_data, locations, test_size=0.4, random_state=42)
     
     # Split the temporary set into validation and test sets
-    X1_test, X1_val, X2_test, X2_val, X3_test, X3_val, X4_test, X4_val, Y_test, Y_val = train_test_split(X1_tmp, X2_tmp, X3_tmp, X4_tmp, y_tmp, test_size=0.5, random_state=42)
+    X1_test, X1_val, X2_test, X2_val, X3_test, X3_val, X4_test, X4_val, Y_test, Y_val, locations_test, locations_val = train_test_split(X1_tmp, X2_tmp, X3_tmp, X4_tmp, y_tmp, locations_tmp, test_size=0.5, random_state=42)
 
     X_train = np.asarray(X1_train), np.asarray(X2_train), np.asarray(X3_train), np.asarray(X4_train)
     X_val = [np.asarray(X1_val), np.asarray(X2_val), np.asarray(X3_val), np.asarray(X4_val)]
     X_test = [np.asarray(X1_test), np.asarray(X2_test), np.asarray(X3_test), np.asarray(X4_test)]
-    return (X_train, np.asarray(Y_train), X_val, np.asarray(Y_val), X_test, np.asarray(Y_test))
+    return (X_train, np.asarray(Y_train), X_val, np.asarray(Y_val), X_test, np.asarray(Y_test), locations_train, locations_val, locations_test)
 
 #Best on test set (99.4%): batch_sizes = [16], nr_of_epochs = [8], model_sizes = [16], learning_rates = [0.0003], regularize = [False] (cheated though, because the hyperparameters were tuned against the test set)
 #When max_val_f1_score was used the best parameters were: batch_sizes = [16], nr_of_epochs = [100], model_sizes = [64], learning_rates = [0.003], regularize = [True]
@@ -247,7 +242,7 @@ if __name__ == '__main__':
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
 
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
+    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
 
     parameters, best_f1_score, stored_lowest_val_loss, stored_max_val_f1_score = generate_hyperparameter_combinations()
 

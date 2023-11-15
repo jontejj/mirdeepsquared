@@ -1,4 +1,5 @@
 import os
+import sys
 import pprint
 import screed # a library for reading in FASTA/FASTQ
 import pandas as pd
@@ -22,8 +23,8 @@ def process_mrd_file(mrd_filepath):
     location_name = ""
     read_density_map = np.zeros(112, dtype=np.int32)
     for x in mrd:
-        #TODO: can also be cel-miR-38 etc...
-        match_for_read = re.search(r"[A-Za-z]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", x)
+        #TODO: can also be cel-miR-38 etc... (or d03_29148352_x2 (Zebrafish samples))
+        match_for_read = re.search(r"[A-Za-z0-9]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", x)
         if x.startswith(">"):
             location_name = x[1:-1] #Usually chromosome location
         if x.startswith("exp"):
@@ -135,35 +136,37 @@ def filter_out_sequences_not_in_mirgene_db(df, mirgene_db_file):
     print_mirgene_db_stats(df)
     df = df.loc[(df['in_mirgene_db'] == True)]
     df = df.drop('in_mirgene_db', axis=1)
+    return df
 
 def print_mirgene_db_stats(df):
     print("Novel sequences not in mirgene db: " + str(len(df[(df['predicted_as_novel'] == True) & (df['in_mirgene_db'] == False)])))
     print("Mature sequences not in mirgene db: " + str(len(df[(df['predicted_as_novel'] == False) & (df['in_mirgene_db'] == False)])))
 
 def label_false_positive(df, false_positives, labels, true_positives):
+    false_positive_list = set()
     if false_positives:
         false_positive_list = set(df['location'].values)
-    elif true_positives:
-        false_positive_list = set()
     elif labels != None:
         with open(labels) as file:
             false_positive_list = set(line.rstrip() for line in file)
-    else:
-        raise ValueError("Expected either of -fp, -tp or -l to be supplied. Unable to label data as false positives")
 
     df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)    
 
     #print(df[df['location'].str.contains('chrII:11534525-11540624_19')])
-    only_relevant_data = None
+    only_relevant_data = df
     if true_positives:
         only_relevant_data = df.loc[(df['predicted_as_novel'] == False)]
     elif false_positives:
         only_relevant_data = df.loc[df['predicted_as_novel'] == True]
-    #For a manually curated file (labels != None), all data is relevant
 
     return only_relevant_data
 
-if __name__ == '__main__':
+def filter_out_locations_not_in_filter_file(df, filter_file):
+    with open(filter_file) as file:
+            locations_to_keep = set(line.rstrip() for line in file)
+            return df.loc[(df['location'].isin(locations_to_keep))]
+
+def parse_args(args):
     parser = argparse.ArgumentParser(prog='MirDeepSquared-preprocessor', description='Extracts features from result.csv and output.mrd from MiRDeep2 and puts them in dataframes in pickle files')
 
     parser.add_argument('result_csv') # positional argument
@@ -172,22 +175,35 @@ if __name__ == '__main__':
     parser.add_argument('-fp', '--false_positives', action='store_true', help="Treat all novel classifications as false positives")
     parser.add_argument('-tp', '--true_positives', action='store_true', help="Treat all mature classifications as true positives")
     parser.add_argument('-l', '--labels', help="Manual file with curated false positives in it")
-    parser.add_argument('-m', '--mirgene_db_file', help="File to filter results with")
+    parser.add_argument('-m', '--mirgene_db_file', help="Mirgene DB file to filter results with")
+    parser.add_argument('-f', '--filter', help="Location file to filter results with (only locations in this file will end up in the dataset)")
 
-    args = parser.parse_args()
+    return parser.parse_args(args)
+
+def extract_features_main(args):
     mrd_filepath = args.output_mrd
     result_filepath = args.result_csv
     false_positives = args.false_positives
     labels = args.labels
     true_positives = args.true_positives
     mirgene_db_file = args.mirgene_db_file
-    pickle_output_file = args.pickle_output_file
+    filter_file = args.filter
 
     df = extract_features(mrd_filepath, result_filepath)
     print_basic_stats(df)
     if mirgene_db_file != None:
-        filter_out_sequences_not_in_mirgene_db(df, mirgene_db_file)
+        df = filter_out_sequences_not_in_mirgene_db(df, mirgene_db_file)
+    if filter_file != None:
+        df = filter_out_locations_not_in_filter_file(df, filter_file)
 
     df = label_false_positive(df, false_positives, labels, true_positives)
+    return df
+
+if __name__ == '__main__':
+    args = parse_args(sys.argv[1:])
+    df = extract_features_main(args)
+    
+    pickle_output_file = args.pickle_output_file
     df.to_pickle(pickle_output_file)
+    
     

@@ -1,4 +1,4 @@
-from train import prepare_data, split_data, read_dataframes
+from .train import prepare_data, split_data, read_dataframes
 from keras.saving import load_model
 from sklearn.metrics import f1_score
 
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     model = load_model("best-model-not-seen-test.keras")
 
     df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
+    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
     pred = model.predict(X_val)
     pred = (pred>=0.50)
     original_F1 = f1_score(Y_val,pred)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
             df = read_dataframes(["resources/dataset/true_positives_TCGA_LUSC.pkl", "resources/dataset/false_positives_SRR2496781-84_bigger.pkl"])
             df = prepare_data(df)
             random.shuffle(df[feature].values)
-            X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(df)
+            X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(df)
 
             pred = model.predict(X_val)
             pred = (pred>=0.50)

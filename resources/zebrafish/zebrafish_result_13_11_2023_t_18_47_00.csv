@@ -1,0 +1,168 @@
+miRDeep2 score	novel miRNAs reported by miRDeep2	novel miRNAs, estimated false positives	novel miRNAs, estimated true positives	known miRNAs in species	known miRNAs in data	known miRNAs detected by miRDeep2	estimated signal-to-noise	excision gearing
+10	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	9 (6%)	7.5	1
+9	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	9 (6%)	7	1
+8	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	13 (9%)	10.9	1
+7	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	23 (16%)	14.8	1
+6	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	23 (16%)	13.1	1
+5	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	69 (48%)	10.3	1
+4	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	78 (55%)	9	1
+3	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	78 (55%)	6.1	1
+2	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	95 (66%)	6.1	1
+1	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	101 (71%)	3.6	1
+0	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	107 (75%)	2.6	1
+-1	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	115 (80%)	2.3	1
+-2	0	0 +/- 0	0 +/- 0 (0 +/- 0%)	425	143	117 (82%)	1.8	1
+-3	1	14 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	120 (84%)	1.6	1
+-4	1	15 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	126 (88%)	1.6	1
+-5	2	20 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.5	1
+-6	2	38 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.2	1
+-7	2	41 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.2	1
+-8	2	43 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.1	1
+-9	5	44 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.1	1
+-10	5	45 +/- 4	0 +/- 0 (0 +/- 0%)	425	143	129 (90%)	1.1	1
+
+
+
+novel miRNAs predicted by miRDeep2
+provisional id	miRDeep2 score	estimated probability that the miRNA candidate is a true positive	rfam alert	total read count	mature read count	loop read count	star read count	significant randfold p-value	miRBase miRNA	example miRBase miRNA with the same seed	UCSC browser	NCBI blastn	consensus mature sequence	consensus star sequence	consensus precursor sequence	precursor coordinate
+NC_007124.7_234	-2.9	0 +/- 0%	-	23	23	0	0	no	-	-	-	-	cuuucagucggauguuugcag	guuacucucgcccagaaaucugcg	cuuucagucggauguuugcagcagccaacugcuguuacucucgcccagaaaucugcg	NC_007124.7:27795179..27795236:+
+NC_007118.7_154	-4.4	0 +/- 0%	-	2	2	0	0	yes	-	-	-	-	ucuauggaugugaaugggugu	acccacugacuuccauaguaa	acccacugacuuccauaguaauuucuuuuuuucuauggaugugaaugggugu	NC_007118.7:16548469..16548521:-
+NC_007113.7_22	-8.7	0 +/- 0%	-	1	1	0	0	no	-	-	-	-	uacgaaacggauggcgag	ugccaauggucgauu	ugccaauggucgauuugccgggauacgaaacggauggcgag	NC_007113.7:22966033..22966074:-
+NC_007130.7_308	-8.9	0 +/- 0%	-	1	1	0	0	no	-	-	-	-	agaagaugaguccacugugg	auggugccuuauccugc	auggugccuuauccugcuggaaguagccaucagaagaugaguccacugugg	NC_007130.7:29733959..29734010:-
+NC_007118.7_156	-8.9	0 +/- 0%	-	1	1	0	0	no	-	-	-	-	aaggggauguagcucaguggu	ggcuuuagcugcgucuucaggg	ggcuuuagcugcgucuucagggcguuugacagaaggggauguagcucaguggu	NC_007118.7:18601530..18601583:-
+
+
+
+mature miRBase miRNAs detected by miRDeep2
+tag id	miRDeep2 score	estimated probability that the miRNA is a true positive	rfam alert	total read count	mature read count	loop read count	star read count	significant randfold p-value	mature miRBase miRNA	example miRBase miRNA with the same seed	UCSC browser	NCBI blastn	consensus mature sequence	consensus star sequence	consensus precursor sequence	precursor coordinate
+NC_007115.7_67	815.2	0 +/- 0%	-	1590	1588	0	2	yes	Dre-Let-7-P2b4b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguauaguu	uauacaacuuacugucuuuccc	ugagguaguagguuguauaguuugaggguuuaacccuugcugucagauaacuauacaacuuacugucuuuccc	NC_007115.7:18654171..18654244:-
+NC_007124.7_233	14.4	0 +/- 0%	-	26	23	0	3	yes	Dre-Mir-30-P1d_5p	-	-	-	cuuucagucggauguuugcag	uguaaacauccuugacuggaag	uguaaacauccuugacuggaagcuggugcacaugauggagcuuucagucggauguuugcag	NC_007124.7:27795139..27795200:+
+NC_007130.7_301	14.3	0 +/- 0%	-	26	23	0	3	yes	Dre-Mir-30-P1b_5p	-	-	-	cuuucagucggauguuugcag	uguaaacauccuugacuggaag	uguaaacauccuugacuggaagcuggguguaggguuugugaaggcuuucagucggauguuugcag	NC_007130.7:42099799..42099864:+
+NC_007134.7_342	8.5	0 +/- 0%	-	9	8	0	1	yes	Dre-Mir-133-P3-v1_3p	Gmo-Mir-133-P1-v2_3p	-	-	uugguccccuucaaccagcugu	agcugguaaaauggaaccaaa	agcugguaaaauggaaccaaaucaacuguuuuauggauuugguccccuucaaccagcugu	NC_007134.7:7172130..7172190:-
+NC_007113.7_16	8.4	0 +/- 0%	-	9	8	0	1	yes	Dre-Mir-133-P3-v1_3p	Gmo-Mir-133-P1-v2_3p	-	-	uugguccccuucaaccagcugu	agcugguaaaauggaaccaaa	agcugguaaaauggaaccaaaucaccucuucaauggauuugguccccuucaaccagcugu	NC_007113.7:4114132..4114192:-
+NC_007116.7_96	7.8	0 +/- 0%	-	6	5	0	1	yes	Dre-Mir-199-P2b-v2_3p	Gmo-Mir-199-P1a-v1_3p	-	-	acaguagucugcacauugguua	cccaguguucagacuaccuguuc	cccaguguucagacuaccuguucaggaauuaguguuuguacaguagucugcacauugguua	NC_007116.7:1376778..1376839:-
+NC_007119.7_169	7.7	0 +/- 0%	-	13	10	0	3	yes	Dre-Mir-27-P2b_3p	-	-	-	agagcuuagcugauuggugaac	uucacaguggcuaaguucugc	agagcuuagcugauuggugaacagugauugaacucuuuguucacaguggcuaaguucugc	NC_007119.7:30167448..30167508:-
+NC_007116.7_106	7.5	0 +/- 0%	-	6	5	0	1	yes	Dre-Mir-199-P2a-v2_3p	Gmo-Mir-199-P1a-v2_3p	-	-	uacaguagucugcacauugguua	cccaguguucagacuaccuguuc	cccaguguucagacuaccuguucagggcguagagauuguacaguagucugcacauugguua	NC_007116.7:63709622..63709683:-
+NC_007112.7_9	5.8	0 +/- 0%	-	15	15	0	0	yes	Dre-Mir-15-P2a1_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacguaaauauuggagu	uccaguauugaccgugcugcugga	uagcagcacguaaauauuggagucaaagcacuugcgaauccuccaguauugaccgugcugcugga	NC_007112.7:46722415..46722480:-
+NW_018394759.1_405	5.7	0 +/- 0%	-	12	12	0	0	yes	Dre-Mir-15-P2a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcauguaaauauuggag	ccaauauugcucgugcugcugaa	uagcagcauguaaauauuggaguuacuccuuggccaaugccuccaauauugcucgugcugcugaa	NW_018394759.1:257706..257771:-
+NW_018395285.1_443	5.7	0 +/- 0%	-	12	12	0	0	yes	Dre-Mir-15-P2a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcauguaaauauuggag	ccaauauugcucgugcugcugaa	uagcagcauguaaauauuggaguuacuccuuggccaaugccuccaauauugcucgugcugcugaa	NW_018395285.1:16440..16505:-
+NC_007120.7_179	5.7	0 +/- 0%	-	12	12	0	0	yes	Dre-Mir-15-P2a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcauguaaauauuggag	ccaauauugcucgugcugcugaa	uagcagcauguaaauauuggaguuacuccuuggccaaugccuccaauauugcucgugcugcugaa	NC_007120.7:29652388..29652453:-
+NC_007136.7_360	5.6	0 +/- 0%	-	33	33	0	0	yes	Dre-Let-7-P2b2b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguugugugg	auacaaccuacugccuuccc	ugagguaguagguugugugguuucaggguagugauuuugccccaucaggaguuaacuauacaaccuacugccuuccc	NC_007136.7:2192691..2192768:+
+NC_007135.7_351	5.6	0 +/- 0%	-	29	29	0	0	yes	Dre-Mir-26-P1a_5p	Gmo-Mir-26-P1a_5p	-	-	uucaaguaauccaggauaggcu	ccuguucuugguuacuugcacu	uucaaguaauccaggauaggcuuuguggacuaggguuggccuguucuugguuacuugcacu	NC_007135.7:20470991..20471052:-
+NC_007115.7_65	5.6	0 +/- 0%	-	33	33	0	0	yes	Dre-Let-7-P2b2b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguugugugg	auacaaccuacugccuuccc	ugagguaguagguugugugguuucaggguuguguuuuugccccaucaggaguuaacuauacaaccuacugccuuccc	NC_007115.7:18653154..18653231:-
+NC_007124.7_236	5.6	0 +/- 0%	-	270	270	0	0	yes	Dre-Mir-30-P2b_5p	Gmo-Mir-30-P1a_5p	-	-	uguaaacauccuacacucucagcu	ccgaggccgggagugggauguuugcgcu	uguaaacauccuacacucucagcuggagcgcagccgaggccgggagugggauguuugcgcu	NC_007124.7:27804076..27804137:+
+NC_007134.7_332	5.5	0 +/- 0%	-	340	340	0	0	yes	Dre-Mir-499-P1_5p	Gmo-Mir-499-P1_5p	-	-	uuaagacuugcagugauguuu	acaucacuuuaagucugugcu	uuaagacuugcagugauguuuagguaaucugacccaugaacaucacuuuaagucugugcu	NC_007134.7:18731334..18731394:+
+NC_007127.7_278	5.5	0 +/- 0%	-	3	2	0	1	yes	Dre-Mir-30-P1a_5p	Gmo-Mir-30-P1a_5p	-	-	uguaaacauccccgacuggaagc	cuuucaguuggauguuugcugu	uguaaacauccccgacuggaagcugugcuacgcggaaaacgagcuuucaguuggauguuugcugu	NC_007127.7:25341449..25341514:+
+NC_007127.7_280	5.5	0 +/- 0%	-	25	25	0	0	yes	Dre-Mir-30-P2a_5p	Gmo-Mir-30-P1a_5p	-	-	uguaaacauccuacacucagcug	gcugggcggaggguguuugcugu	uguaaacauccuacacucagcugugagcugcagacgaggcugggcggaggguguuugcugu	NC_007127.7:25341738..25341799:+
+NC_007114.7_27	5.4	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-24-P4a_3p	Gmo-Mir-24-P1_3p	-	-	uggcucaguucagcaggaacagg	ugugccugcugugcugauaaucagu	ugugccugcugugcugauaaucaguggacggcugugacuggcucaguucagcaggaacagg	NC_007114.7:13412990..13413051:+
+NC_007117.7_127	5.4	0 +/- 0%	-	1588	1588	0	0	yes	Dre-Let-7-P1d1_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguauaguu	cuauacagucuauugccuuccc	ugagguaguagguuguauaguuugugggaaggaucacauccuauucaggugauaacuauacagucuauugccuuccc	NC_007117.7:54506481..54506558:-
+NC_007136.7_367	5.4	0 +/- 0%	-	15	15	0	0	yes	Dre-Let-7-P2c2b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaguuugugcuguu	cugcgcaagcuacucccuugcc	ugagguaguaguuugugcuguugguugggaugugacauugcccguuauggagaugacugcgcaagcuacucccuugcc	NC_007136.7:1629661..1629739:-
+NC_007134.7_336	5.4	0 +/- 0%	-	133	133	0	0	yes	Dre-Let-7-P2b3a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaaguuguguuguu	cuauacaauuuacugccuucca	ugagguaguaaguuguguuguuguuggggaucaguauaguauggcccuugaaggagauaacuauacaauuuacugccuucca	NC_007134.7:28536682..28536764:+
+NW_018395155.1_434	5.4	0 +/- 0%	-	133	133	0	0	yes	Dre-Let-7-P2b3a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaaguuguguuguu	cuauacaauuuacugccuucca	ugagguaguaaguuguguuguuguuggggaucaguauaguauggcccuugaaggagauaacuauacaauuuacugccuucca	NW_018395155.1:496963..497045:+
+NC_007134.7_337	5.4	0 +/- 0%	-	1588	1588	0	0	yes	Dre-Let-7-P2a2a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguauaguu	cuauacagucuauugccuuccu	ugagguaguagguuguauaguuuggugggagggaucaaacccuguucagcugauaacuauacagucuauugccuuccu	NC_007134.7:5431214..5431292:-
+NC_007112.7_11	5.4	0 +/- 0%	-	21	21	0	0	yes	Dre-Mir-15-P1a1_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacagaaugguuugu	aggccguacugugcugcggca	uagcagcacagaaugguuugugaguuauaacgggggugcaggccguacugugcugcggca	NC_007112.7:46722632..46722692:-
+NC_007130.7_304	5.3	0 +/- 0%	-	269	269	0	0	yes	Dre-Mir-30-P2d_5p	Gmo-Mir-30-P1a_5p	-	-	uguaaacauccuacacucucagcu	cugggagagggauguuuacucu	uguaaacauccuacacucucagcugugacgucaccaagcugggagagggauguuuacucu	NC_007130.7:42101718..42101778:+
+NW_018394759.1_407	5.3	0 +/- 0%	-	20	20	0	0	yes	Dre-Mir-15-P1a1_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacagaaugguuugu	aggccgugaugugcugcagca	uagcagcacagaaugguuuguggugauacagagaugcaggccgugaugugcugcagca	NW_018394759.1:257848..257906:-
+NW_018395151.1_429	5.3	0 +/- 0%	-	41	41	0	0	yes	Dre-Mir-26-P4_5p	Gmo-Mir-26-P1a_5p	-	-	uucaaguaauccaggauagguu	ccuauucuugguuacuuguuuc	uucaaguaauccaggauagguuaguucccacuaguacggccuauucuugguuacuuguuuc	NW_018395151.1:295820..295881:-
+NC_007122.7_223	5.3	0 +/- 0%	-	339	339	0	0	yes	Dre-Mir-499-P1_5p	Gmo-Mir-499-P1_5p	-	-	uuaagacuugcagugauguuu	acaucacuuuaagucugugcu	uuaagacuugcagugauguuuagagaaaugucacaugaacaucacuuuaagucugugcu	NC_007122.7:25205168..25205227:-
+NC_007126.7_269	5.3	0 +/- 0%	-	36	36	0	0	yes	Dre-Let-7-P1c2_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguau	acaaccuucuagcuuucc	ugagguaguagguuguaugguuuagaauuuugcccugggaguuaacuguacaaccuucuagcuuucc	NC_007126.7:29795844..29795911:+
+NW_018395155.1_432	5.3	0 +/- 0%	-	830	830	0	0	yes	Dre-Let-7-P2a3b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaguuuguauaguu	cuauacagucuacugucuuucc	ugagguaguaguuuguauaguuuuaggaucacaccagaucugggagauaacuauacagucuacugucuuucc	NW_018395155.1:496654..496726:+
+NC_007122.7_225	5.3	0 +/- 0%	-	1186	1186	0	0	yes	Dre-Let-7-P2b1a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagauuguauaguu	cuauacaaucuauugccuuccc	ugagguaguagauuguauaguuguaggguagugauuuuauccuguguagaagauaacuauacaaucuauugccuuccc	NC_007122.7:27503035..27503113:-
+NC_007120.7_181	5.3	0 +/- 0%	-	20	20	0	0	yes	Dre-Mir-15-P1a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacagaaugguuugu	aggccaugaugugcugcagca	uagcagcacagaaugguuuguggugauacagagaugcaggccaugaugugcugcagca	NC_007120.7:29652530..29652588:-
+NW_018395285.1_445	5.3	0 +/- 0%	-	20	20	0	0	yes	Dre-Mir-15-P1a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacagaaugguuugu	aggccaugaugugcugcagca	uagcagcacagaaugguuuguggugauacagagaugcaggccaugaugugcugcagca	NW_018395285.1:16582..16640:-
+NC_007117.7_118	5.3	0 +/- 0%	-	23	23	0	0	yes	Dre-Let-7-P2c3_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguuguuuguacaguu	cuguacagacuacugccuugcc	ugagguaguuguuuguacaguuuuuagggucuguuauucugcccuguuaaggagcuaacuguacagacuacugccuugcc	NC_007117.7:41454793..41454873:+
+NC_007134.7_334	5.3	0 +/- 0%	-	830	830	0	0	yes	Dre-Let-7-P2a3b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaguuuguauaguu	cuauacagucuacugucuuucc	ugagguaguaguuuguauaguuuuaggaucacaccagaucugggagauaacuauacagucuacugucuuucc	NC_007134.7:28536373..28536445:+
+NC_007134.7_347	5.3	0 +/- 0%	-	41	41	0	0	yes	Dre-Mir-26-P4_5p	Gmo-Mir-26-P1a_5p	-	-	uucaaguaauccaggauagguu	ccuauucuugguuacuuguuuc	uucaaguaauccaggauagguuaguucccacuaguacggccuauucuugguuacuuguuuc	NC_007134.7:24675223..24675284:-
+NC_007120.7_186	5.3	0 +/- 0%	-	24	15	0	9	yes	Dre-Mir-221-P1a1_5p	Gmo-Mir-221-P1a1_3p	-	-	agcuacaucuggcuacuggguc	ugcucaguagucaguguagauc	ugcucaguagucaguguagauccugugucacaaucagcagcuacaucuggcuacuggguc	NC_007120.7:33921482..33921542:-
+NC_007113.7_14	5.2	0 +/- 0%	-	24	24	0	0	yes	Dre-Mir-26-P1a_5p	Gmo-Mir-26-P1a_5p	-	-	uucaaguaauccaggauaggcu	ccuauucaugauuacuugcacu	uucaaguaauccaggauaggcugucuguccuggaggccuauucaugauuacuugcacu	NC_007113.7:21375502..21375560:+
+NC_007117.7_132	5.2	0 +/- 0%	-	26	26	0	0	yes	Dre-Mir-221-P2a1_3p	Gmo-Mir-221-P1a1_3p	-	-	agcuacauugucugcuggguuu	cccuggcacacaguguauuggucugu	cccuggcacacaguguauuggucugugugugugugugucuacagcuacauugucugcuggguuu	NC_007117.7:59901710..59901774:-
+NC_007121.7_218	5.2	0 +/- 0%	-	36	36	0	0	yes	Dre-Let-7-P1c2_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguau	acaaccuucuagcuuucc	ugagguaguagguuguaugguuucgaaugacaccaugggaguuaacuguacaaccuucuagcuuucc	NC_007121.7:38072087..38072154:-
+NC_007112.7_7	5.2	0 +/- 0%	-	31	31	0	0	yes	Dre-Mir-17-P1a2_5p	Gmo-Mir-17-P1a1_5p	-	-	caaagugcuuacagugcaggua	acugcaguggaggcacuucuag	caaagugcuuacagugcagguaguauuauggaauaucuacugcaguggaggcacuucuag	NC_007112.7:3298149..3298209:-
+NC_007117.7_129	5.1	0 +/- 0%	-	2648	2648	0	0	yes	Dre-Let-7-P2a4b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagauugaauaguu	cuauacaaucuacugucuuucu	ugagguaguagauugaauaguuguggaguauaaaaccucccuuugagauaacuauacaaucuacugucuuucu	NC_007117.7:54507103..54507176:-
+NW_018394909.1_419	5.1	0 +/- 0%	-	11	11	0	0	yes	Dre-Mir-218-P4-v1_5p	Gmo-Mir-218-P2_5p	-	-	uugugcuugaucuaaccaugug	caugguuccgucaagcaccagg	uugugcuugaucuaaccaugugccgccgccuacacaagccucacaugguuccgucaagcaccagg	NW_018394909.1:511124..511189:-
+NC_007125.7_251	5.1	0 +/- 0%	-	11	11	0	0	yes	Dre-Mir-218-P4-v1_5p	Gmo-Mir-218-P2_5p	-	-	uugugcuugaucuaaccaugug	caugguuccgucaagcaccagg	uugugcuugaucuaaccaugugccgccgccuacacaagccucacaugguuccgucaagcaccagg	NC_007125.7:24562808..24562873:-
+NC_007120.7_184	5.1	0 +/- 0%	-	26	26	0	0	yes	Dre-Mir-221-P2a2_3p	Gmo-Mir-221-P1a1_3p	-	-	agcuacauugucugcuggguuu	accuggcauacaauguagauuucugu	accuggcauacaauguagauuucugugugguacuaucuacagcuacauugucugcuggguuu	NC_007120.7:33920955..33921017:-
+NC_007134.7_345	5.1	0 +/- 0%	-	830	830	0	0	yes	Dre-Let-7-P2a3a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguaguuuguauaguu	cuauacagccuacugucuuucu	ugagguaguaguuuguauaguuugggaucacaccagaucugggagauaacuauacagccuacugucuuucu	NC_007134.7:18382467..18382538:-
+NC_007136.7_358	5.1	0 +/- 0%	-	1591	1591	0	0	yes	Dre-Let-7-P1d1_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguauaguu	cuauacaacuuacugucuuucc	ugagguaguagguuguauaguuuuagggugacacccuuccuguuagauaacuauacaacuuacugucuuucc	NC_007136.7:2189977..2190049:+
+NC_007119.7_168	5	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-24-P2a_3p	Gmo-Mir-24-P1_3p	-	-	uggcucaguucagcaggaacagg	cgugccuacugagcugauuacagu	cgugccuacugagcugauuacaguacugugcaaacacuggcucaguucagcaggaacagg	NC_007119.7:30162531..30162591:-
+NC_007132.7_320	5	0 +/- 0%	-	75	73	0	2	yes	Dre-Mir-126-P2b-v2_5p	Gmo-Mir-126-P2b-v1_3p	-	-	ucguaccgugaguaauagug	cauuauuacuuuugguacgcg	cauuauuacuuuugguacgcgcuaugccacucucaacucguaccgugaguaauagug	NC_007132.7:7240250..7240307:-
+NW_018394730.1_400	5	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-24-P3_3p	Gmo-Mir-24-P1_3p	-	-	uggcucaguucagcaggaacagg	cgugccuacugagcugauuacagu	cgugccuacugagcugauuacaguacugugcaaacacuggcucaguucagcaggaacagg	NW_018394730.1:347441..347501:-
+NC_007119.7_164	5	0 +/- 0%	-	23	21	0	2	yes	Dre-Mir-126-P2a-v2_5p	Gmo-Mir-126-P2b-v1_3p	-	-	ucguaccgugaguaauaaug	cauuauuacuuuugguacgcg	cauuauuacuuuugguacgcgcuaggccagacucaaacucguaccgugaguaauaaug	NC_007119.7:11548436..11548494:-
+NC_007121.7_197	5	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-24-P3_3p	Gmo-Mir-24-P1_3p	-	-	uggcucaguucagcaggaacagg	ggugccuucugagcugauaucagu	ggugccuucugagcugauaucaguuguaguaaaucacuggcucaguucagcaggaacagg	NC_007121.7:15960845..15960905:+
+NC_007112.7_5	4.9	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-17-P4a1_5p	Gmo-Mir-17-P1a1_5p	-	-	uaaagugcuuauagugcagguag	acugcagugugagcacuugaagu	uaaagugcuuauagugcagguaguauuucugucaucuacugcagugugagcacuugaagu	NC_007112.7:3297645..3297705:-
+NC_007113.7_18	4.9	0 +/- 0%	-	237	237	0	0	yes	Dre-Mir-1-P3_3p	Gmo-Mir-1-P1_3p	-	-	uggaauguaaagaaguauguau	acauacuucuuuaugugcccaua	acauacuucuuuaugugcccauaugaacauauaaaagcuauggaauguaaagaaguauguau	NC_007113.7:4116325..4116387:-
+NC_007126.7_262	4.9	0 +/- 0%	-	721	721	0	0	yes	Dre-Mir-21-P1_5p	Gmo-Mir-21-P1_5p	-	-	uagcuuaucagacugguguugg	aacagcagucuaauaggcuguc	uagcuuaucagacugguguuggcuuugaguuuuuggcaacagcagucuaauaggcuguc	NC_007126.7:17373821..17373880:+
+NC_007121.7_194	4.8	0 +/- 0%	-	8	7	0	1	yes	Dre-Mir-23-P2b_3p	-	-	-	aucacauugccagggauuacc	uggguucuuggcaugcugauuu	uggguucuuggcaugcugauuugugacuguaguaaaaaaaaaucacauugccagggauuacc	NC_007121.7:15954587..15954649:+
+NC_007134.7_344	4.7	0 +/- 0%	-	238	238	0	0	yes	Dre-Mir-1-P1_3p	Gmo-Mir-1-P1_3p	-	-	uggaauguaaagaaguauguau	acauacuucuuuauaugcccaua	acauacuucuuuauaugcccauaugaacaagagcagcuauggaauguaaagaaguauguau	NC_007134.7:7210179..7210240:-
+NC_007112.7_2	4.6	0 +/- 0%	-	11	11	0	0	yes	Dre-Mir-218-P2_5p	Gmo-Mir-218-P2_5p	-	-	uugugcuugaucuaaccaugug	caugguucugucaagcaccaug	uugugcuugaucuaaccaugugguugcagacucagacuaauacaugguucugucaagcaccaug	NC_007112.7:23866890..23866954:+
+NC_007120.7_189	4.6	0 +/- 0%	-	14	14	0	0	yes	Dre-Mir-17-P4a2_5p	Gmo-Mir-17-P1a1_5p	-	-	uaaagugcuuauagugcagguag	acugcaaugugagcacuucaagu	uaaagugcuuauagugcagguaguuugugaaaauccugaucuacugcaaugugagcacuucaagu	NC_007120.7:53436541..53436606:-
+NC_007120.7_191	4.4	0 +/- 0%	-	31	31	0	0	yes	Dre-Mir-17-P1a1_5p	Gmo-Mir-17-P1a1_5p	-	-	caaagugcuuacagugcaggua	acugcaguggaggcacuucaag	caaagugcuuacagugcagguaguucaauauaaucuacugcaguggaggcacuucaag	NC_007120.7:53436955..53437013:-
+NC_007116.7_77	4.3	0 +/- 0%	-	2	1	0	1	yes	Dre-Mir-130-P4a1_3p	Gmo-Mir-130-P1a1_3p	-	-	cagugcaauaaugaaagggcau	acucuuucccuguugcacuacug	acucuuucccuguugcacuacugugggagcugcagcaaagcagugcaauaaugaaagggcau	NC_007116.7:13299342..13299404:+
+NC_007131.7_309	3.7	0 +/- 0%	-	6	1	0	5	yes	Dre-Mir-199-P2a-v2_3p	-	-	-	cccaguguucagacuaccuguuc	acaguagucugcacauugguua	cccaguguucagacuaccuguucaggaucauacugguguacaguagucugcacauugguua	NC_007131.7:14875473..14875534:+
+NC_007116.7_75	2.9	0 +/- 0%	-	8	8	0	0	yes	Dre-Mir-130-P3a1_3p	Gmo-Mir-130-P1a1_3p	-	-	uagugcaauauugcuuauagggu	ccuaucaauauugccucugcu	ccuaucaauauugccucugcuuuucucacuguuuauggaguagugcaauauugcuuauagggu	NC_007116.7:13296331..13296394:+
+NW_018394730.1_404	2.8	0 +/- 0%	-	7	7	0	0	yes	Dre-Mir-23-P2a_3p	Gmo-Mir-23-P1_3p	-	-	aucacauugccagggauuacc	ggguuccuggcgugcugauuu	ggguuccuggcgugcugauuugugacuuaagauaaaaaucacauugccagggauuacc	NW_018394730.1:352547..352605:-
+NC_007119.7_172	2.8	0 +/- 0%	-	7	7	0	0	yes	Dre-Mir-23-P2a_3p	Gmo-Mir-23-P1_3p	-	-	aucacauugccagggauuacc	ggguuccuggcgugcugauuu	ggguuccuggcgugcugauuugugacuuaagauaaaaaucacauugccagggauuacc	NC_007119.7:30167637..30167695:-
+NC_007114.7_25	2.8	0 +/- 0%	-	7	7	0	0	yes	Dre-Mir-27-P3_3p	Gmo-Mir-27-P1_3p	-	-	uucacagugguuaaguucugc	aggacuuaacccacuugugaaca	aggacuuaacccacuugugaacaaugcaucgaacuucaauguucacagugguuaaguucugc	NC_007114.7:13406464..13406526:+
+NC_007128.7_289	2.7	0 +/- 0%	-	7	7	0	0	yes	Dre-Mir-456_3p	Gmo-Mir-456_3p	-	-	caggcugguuagaugguugucac	gugcaggcaucuuuccagucuacaugug	gugcaggcaucuuuccagucuacauguggauccaggagucugcaggcugguuagaugguugucac	NC_007128.7:22827073..22827138:+
+NW_018394987.1_427	2.7	0 +/- 0%	-	7	7	0	0	yes	Dre-Mir-456_3p	Gmo-Mir-456_3p	-	-	caggcugguuagaugguugucac	gugcaggcaucuuuccagucuacaugug	gugcaggcaucuuuccagucuacauguggauccaggagucugcaggcugguuagaugguugucac	NW_018394987.1:208595..208660:+
+NC_007125.7_244	2.4	0 +/- 0%	-	6	6	0	0	yes	Dre-Mir-17-P4d_5p	Gmo-Mir-17-P1a1_5p	-	-	aaaagugcuguuugugcagguag	acuguaggagcagcacuucaca	aaaagugcuguuugugcagguaguguguuuccucuacuguaggagcagcacuucaca	NC_007125.7:100510..100567:+
+NC_007117.7_115	2.4	0 +/- 0%	-	6	6	0	0	yes	Dre-Mir-101-P1-v2_3p	Gmo-Mir-101-P1-v1_3p	-	-	uacaguacugugauaacugaag	ucaguuaucacagugcugaugcu	ucaguuaucacagugcugaugcuguccaucuuaaagguacaguacugugauaacugaag	NC_007117.7:31365457..31365516:+
+NC_007116.7_82	2.4	0 +/- 0%	-	3	2	0	1	yes	Dre-Mir-10-P3d1_5p	-	-	-	acggguuggguucucgggagcu	ucccugagacccuaacuuguga	ucccugagacccuaacuugugacguucugcuucgauguccacggguuggguucucgggagcu	NC_007116.7:29998774..29998836:+
+NC_007114.7_46	2.3	0 +/- 0%	-	3	1	0	2	yes	Dre-Mir-199-P3-v2_3p	-	-	-	cccaguguucagacuaccuguuc	acaguaguccgcacauugguu	cccaguguucagacuaccuguucaucaugcugcagcugaacaguaguccgcacauugguu	NC_007114.7:47195159..47195219:-
+NW_018395323.1_452	2.1	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-22-P1b2_3p	Gmo-Mir-22-P1a_3p	-	-	aagcugccagcugaagaacugu	aguucuucacuggcaagcuuua	aguucuucacuggcaagcuuuauguccuuguguaccagcuaaagcugccagcugaagaacugu	NW_018395323.1:258123..258186:-
+NC_007121.7_204	2.1	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-194-P2b_5p	Gmo-Mir-194-P2a_5p	-	-	uguaacagcaacuccaugugga	caguggagcugcuguugcgug	uguaacagcaacuccauguggaagguuugugucuuccaguggagcugcuguugcgug	NC_007121.7:27063187..27063244:+
+NW_018394787.1_410	2.1	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-194-P2b_5p	Gmo-Mir-194-P2a_5p	-	-	uguaacagcaacuccaugugg	aguggagcugcuguugcgug	uguaacagcaacuccauguggaagguuugugucuuccaguggagcugcuguugcgug	NW_018394787.1:286316..286373:+
+NC_007126.7_272	2.1	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-22-P1b1_3p	Gmo-Mir-22-P1a_3p	-	-	aagcugccagcugaagaacugu	aguucuucacuggcaagcuuua	aguucuucacuggcaagcuuuauguccuuguguaccagcuaaagcugccagcugaagaacugu	NC_007126.7:24908403..24908466:-
+NW_018395289.1_448	2.1	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-194-P2b_5p	Gmo-Mir-194-P2a_5p	-	-	uguaacagcaacuccaugugg	aguggagcugcuguugcgug	uguaacagcaacuccauguggaagguuugugucuuccaguggagcugcuguugcgug	NW_018395289.1:88600..88657:+
+NC_007120.7_188	2	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-92-P1a1_3p	Gmo-Mir-92-P1a1_3p	-	-	uauugcacuugucccggccugu	agguugggaucggccgcaaugcu	agguugggaucggccgcaaugcucugugcuggaaguauugcacuugucccggccugu	NC_007120.7:53436298..53436355:-
+NC_007133.7_323	1.8	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-27-P4a_3p	Gmo-Mir-27-P1_3p	-	-	uucacaguggcuaaguucagu	agagcuuagcuaaucggugagca	agagcuuagcuaaucggugagcauugaucccuuaagaaaacuguucacaguggcuaaguucagu	NC_007133.7:5299971..5300035:+
+NC_007121.7_213	1.8	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-2184-P1a_5p	Gmo-Mir-2184_5p	-	-	aacaguaagaguuuaugugcu	cacauugucucuuacuuguag	aacaguaagaguuuaugugcugagguuaaaaauucagcacauugucucuuacuuguag	NC_007121.7:35654274..35654332:-
+NC_007131.7_311	1.7	0 +/- 0%	-	11	11	0	0	yes	Dre-Mir-214-P1-v2_3p	-	-	-	acagcaggcacagacaggcag	gccugucuacacuugcugugc	gccugucuacacuugcugugcagaacuuccugcaccuguacagcaggcacagacaggcag	NC_007131.7:14877660..14877720:+
+NC_007112.7_4	1.6	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-92-P1a2_3p	Gmo-Mir-92-P1a1_3p	-	-	uauugcacuugucccggccugu	agguugggauugguagcaaugcu	agguugggauugguagcaaugcuguguguuuugaagguauugcacuugucccggccugu	NC_007112.7:3297376..3297435:-
+NC_007121.7_212	1.5	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-130-P3b1_3p	Gmo-Mir-130-P1a1_3p	-	-	uagugcaauauugcuaauaggg	cuaucaguauugccucugcu	cuaucaguauugccucugcuguccacuguguucagaguagugcaauauugcuaauaggg	NC_007121.7:33376843..33376902:-
+NC_007132.7_322	1.5	0 +/- 0%	-	5	5	0	0	yes	Dre-Mir-22-P1b1_3p	Gmo-Mir-22-P1a_3p	-	-	aagcugccagcugaagaacugu	aguucuucucuggcaaacuuua	aguucuucucuggcaaacuuuaugacucugucuuuacgcuaaagcugccagcugaagaacugu	NC_007132.7:39267230..39267293:-
+NC_007120.7_176	1.4	0 +/- 0%	-	29	29	0	0	yes	Dre-Mir-26-P2a_5p	-	-	-	uucaaguaauccaggauaggcu	ccuauucgggaugacuugguuc	uucaaguaauccaggauaggcuugugauguccggaaagccuauucgggaugacuugguuc	NC_007120.7:41733542..41733602:+
+NC_007125.7_243	1.1	0 +/- 0%	-	6	6	0	0	yes	Dre-Mir-17-P4d_5p	Gmo-Mir-17-P1a1_5p	-	-	aaaagugcuguuugugcagguag	acuguccgucgugcugauca	acuguccgucgugcugaucagacacacacacacacacucucucucucguggcuguguguguuaaaagugcuguuugugcagguag	NC_007125.7:100448..100533:+
+NW_018394535.1_380	0.6	0 +/- 0%	-	2	2	0	0	yes	Dre-Mir-150_5p	Gmo-Mir-150_5p	-	-	ucucccaauccuuguaccagug	cuggacgggguuugggggggg	ucucccaauccuuguaccagugucugauuuacagaugacgcuggacgggguuugggggggg	NW_018394535.1:58279..58340:+
+NC_007118.7_148	0.6	0 +/- 0%	-	3	3	0	0	yes	Dre-Mir-15-P1d_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcacaucaugguuugu	gaaucaugaugugcugucacu	uagcagcacaucaugguuuguaaguuauaagggcaaauuccgaaucaugaugugcugucacu	NC_007118.7:26070911..26070973:+
+NC_007114.7_32	0.6	0 +/- 0%	-	2	2	0	0	yes	Dre-Mir-150_5p	Gmo-Mir-150_5p	-	-	ucucccaauccuuguaccagug	cuggacgggguuugggggggg	ucucccaauccuuguaccagugucugauuuacagaugacgcuggacgggguuugggggggg	NC_007114.7:32571318..32571379:+
+NC_007124.7_238	0.4	0 +/- 0%	-	2	2	0	0	yes	Dre-Mir-202_5p	Gmo-Mir-202_5p	-	-	uuccuaugcauauaccucuuu	agaggcauagggcaugggaaaa	uuccuaugcauauaccucuuugacaugcugcuuuaaagaggcauagggcaugggaaaa	NC_007124.7:50602648..50602706:+
+NC_007134.7_340	0.3	0 +/- 0%	-	2648	2648	0	0	no	Dre-Let-7-P2a4b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagauugaauaguu	auguucugucagcggucagc	auguucugucagcggucagcaucugcucugcuguucuuggggcugagguaguagauugaauaguu	NC_007134.7:5431481..5431546:-
+NC_007121.7_205	0	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-132-P1a_3p	Gmo-Mir-132-P1a_3p	-	-	uaacagucuacagccauggucg	accguggcuuuagauuguuacu	accguggcuuuagauuguuacuguagcguuggcacgugguaacagucuacagccauggucg	NC_007121.7:35645042..35645103:+
+NC_007126.7_267	0	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-132-P1b_3p	Gmo-Mir-132-P1a_3p	-	-	uaacagucuacagccauggucg	accguggcauuagauuguuacu	accguggcauuagauuguuacuguaggaacagaauuuuugguaacagucuacagccauggucg	NC_007126.7:25897726..25897789:+
+NC_007126.7_266	0	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-10-P3d2_5p	Gmo-Mir-10-P3b1_5p	-	-	ucccugagacccuaacuuguga	acggguuagguucuugggagc	ucccugagacccuaacuugugacguuuuccuguuaugugcacggguuagguucuugggagc	NC_007126.7:21447700..21447761:+
+NC_007125.7_245	0	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-92-P2d_3p	Gmo-Mir-92-P1a1_3p	-	-	cauugcacuugucucggucuga	aggcggagacuugggcagcugcc	aggcggagacuugggcagcugccgucauucccagaaggcauugcacuugucucggucuga	NC_007125.7:100778..100838:+
+NC_007130.7_298	-0.3	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-10-P3b2_5p	Gmo-Mir-10-P3b1_5p	-	-	ucccugagacccuuaaccugug	caggugagguccuugggaaca	ucccugagacccuuaaccugugaugucuuccaaggucacaggugagguccuugggaaca	NC_007130.7:9443799..9443858:+
+NC_007121.7_215	-0.3	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-10-P3d1_5p	Gmo-Mir-10-P3b1_5p	-	-	ucccugagacccuaacuuguga	acagguuaagcucuugggacc	ucccugagacccuaacuugugagcuuugugugcuaaaaaucacagguuaagcucuugggacc	NC_007121.7:38051674..38051736:-
+NC_007127.7_276	-0.3	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-10-P3b2_5p	Gmo-Mir-10-P3b1_5p	-	-	ucccugagacccuuaaccugug	caggugagguccucaggaaca	ucccugagacccuuaaccugugaggucaaacuaggucacaggugagguccucaggaaca	NC_007127.7:24898183..24898242:+
+NC_007121.7_199	-0.4	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-130-P1a2_3p	Gmo-Mir-130-P1a1_3p	-	-	cagugcaauauuaaaagggcau	gcccuuuuucuguuguacuacu	gcccuuuuucuguuguacuacuggccaaucagaagagcagugcaauauuaaaagggcau	NC_007121.7:17453404..17453463:+
+NC_007116.7_73	-0.7	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-130-P1a2_3p	Gmo-Mir-130-P1a1_3p	-	-	cagugcaauauuaaaagggcau	gcccuuuuucuguuguacuacugug	gcccuuuuucuguuguacuacugugcagucagaugagcagugcaauauuaaaagggcau	NC_007116.7:13288839..13288898:+
+NW_018394915.1_421	-0.8	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-15-P2c-v1_5p	Gmo-Mir-15-P1a2_5p	-	-	aagcagcacauaaauacuggag	ccaguauugcuguucugcugua	aagcagcacauaaauacuggaggugauugugguguuauccaguauugcuguucugcugua	NW_018394915.1:78041..78101:-
+NC_007125.7_253	-0.8	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-15-P2c-v1_5p	Gmo-Mir-15-P1a2_5p	-	-	aagcagcacauaaauacuggag	ccaguauugcuguucugcugua	aagcagcacauaaauacuggaggugauugugguguuauccaguauugcuguucugcugua	NC_007125.7:31521937..31521997:-
+NC_007116.7_104	-0.9	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-144-v2_3p	Gmo-Mir-144-v1_3p	-	-	uacaguauagaugauguac	auaucaucguauacuguaag	auaucaucguauacuguaaguucauuauugagacacuacaguauagaugauguac	NC_007116.7:42272093..42272148:-
+NC_007116.7_79	-1.1	0 +/- 0%	-	4	3	0	1	no	Dre-Mir-10-P2d1_5p	-	-	-	caagcucgugucuauagguaug	aacccguagauccgaacuugug	aacccguagauccgaacuuguggugucucugugcacaagcucgugucuauagguaug	NC_007116.7:29990156..29990213:+
+NC_007126.7_264	-1.3	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-10-P2d2_5p	Gmo-Mir-10-P2c2_5p	-	-	aacccguagauccgaacuugug	caagcuuguaucuauagguauc	aacccguagauccgaacuuguggugacuguccacacaagcuuguaucuauagguauc	NC_007126.7:21437655..21437712:+
+NC_007120.7_183	-2.6	0 +/- 0%	-	26	26	0	0	no	Dre-Mir-221-P2a1_3p	Gmo-Mir-221-P1a1_3p	-	-	agcuacauugucugcuggguuu	ggccagcagaauaauucugcucu	agcuacauugucugcuggguuucaggccagcagaauaauucugcucu	NC_007120.7:33920930..33920977:-
+NC_007117.7_120	-2.8	0 +/- 0%	-	3	3	0	0	yes	Dre-Mir-29-P1d1_5p	-	-	-	gcugaauucagauggugccauaga	uagcaccauuugaaaucagugu	gcugaauucagauggugccauagaguauuuuauggcaucuagcaccauuugaaaucagugu	NC_007117.7:47467921..47467982:+
+NC_007117.7_128	-2.9	0 +/- 0%	-	1588	1588	0	0	no	Dre-Let-7-P2b4b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguuguauaguu	cuagacauuguuuuccuccaca	cuagacauuguuuuccuccacagugaaccuguguguuucuucaaggugagguaguagguuguauaguu	NC_007117.7:54506536..54506604:-
+NC_007130.7_299	-3.1	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-187_3p	-	-	-	cgugucuuguguugcagccagu	gggcugcaacacaggacauggg	gggcugcaacacaggacaugggagcugucucucacucccgcucgugucuuguguugcagccagu	NC_007130.7:34135625..34135689:+
+NC_007127.7_283	-3.5	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-455-P2_5p	-	-	-	ugcaguccaugggcauauaca	uaugugcccuuggacuacauu	uaugugcccuuggacuacauuguggaggccagcaccaugcaguccaugggcauauaca	NC_007127.7:51776558..51776616:+
+NC_007113.7_23	-3.6	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-208-P1_3p	-	-	-	aagcuuuuuguuuguguuaugu	guaagacgaacaaaaaguuuuu	aagcuuuuuguuuguguuauguuuauuuucaaauguaagacgaacaaaaaguuuuu	NC_007113.7:24261227..24261283:-
+NW_018394621.1_386	-3.7	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-455-P1_5p	-	-	-	ugcaguccaugggcauauaca	uaugugcccuuggacuacauc	uaugugcccuuggacuacaucguggaagccagcaccaugcaguccaugggcauauaca	NW_018394621.1:169548..169606:-
+NC_007116.7_108	-3.7	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-455-P1_5p	-	-	-	ugcaguccaugggcauauaca	uaugugcccuuggacuacauc	uaugugcccuuggacuacaucguggaagccagcaccaugcaguccaugggcauauaca	NC_007116.7:65250401..65250459:-
+NC_007115.7_63	-3.8	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-29-P1b1_3p	-	-	-	cugguuucacauggugguuuaga	uagcaccauuugaaaucagug	cugguuucacauggugguuuagauguguucuaccaaagucuagcaccauuugaaaucagug	NC_007115.7:11608208..11608269:-
+NW_018394759.1_406	-3.9	0 +/- 0%	-	12	12	0	0	no	Dre-Mir-15-P2a2_5p	Gmo-Mir-15-P1a2_5p	-	-	uagcagcauguaaauauuggag	ugugugugugugcauguguuguc	ugugugugugugcauguguugucuugcuuuagcagcauguaaauauuggag	NW_018394759.1:257749..257800:-
+NC_007114.7_36	-3.9	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-193-P1b1_3p	-	-	-	ucuuugcgggcaaggugaguag	ucucaacuggccuacaaagucc	ucuuugcgggcaaggugaguaguuaaauuuacucucaacuggccuacaaagucc	NC_007114.7:35959935..35959989:+
+NC_007115.7_61	-4.2	0 +/- 0%	-	1	1	0	0	yes	Dre-Mir-29-P2b1_3p	-	-	-	acugauuuccuuuggugcuuaga	uagcaccauuugaaaucgguua	acugauuuccuuuggugcuuagagucccaucugucaucuagcaccauuugaaaucgguua	NC_007115.7:11606781..11606841:-
+NC_007114.7_29	-4.6	0 +/- 0%	-	1	1	0	0	no	Dre-Mir-148-P3_3p	Gmo-Mir-148-P2_3p	-	-	ucagugcaugacagaacuuugg	caaguucugugauacacucagacu	caaguucugugauacacucagacuuugaaucagugguagucagugcaugacagaacuuugg	NC_007114.7:24095970..24096031:+
+NW_018394531.1_377	-4.6	0 +/- 0%	-	1	1	0	0	no	Dre-Mir-148-P3_3p	Gmo-Mir-148-P2_3p	-	-	ucagugcaugacagaacuuugg	caaguucugugauacacucagacu	caaguucugugauacacucagacuuugaaucagugguagucagugcaugacagaacuuugg	NW_018394531.1:105269..105330:+
+NC_007121.7_206	-5.1	0 +/- 0%	-	1	1	0	0	no	Dre-Mir-132-P1a_3p	Gmo-Mir-132-P1a_3p	-	-	uaacagucuacagccauggucg	acuacugggaaaggcuaaauu	uaacagucuacagccauggucgccaaggggcagguguuacagcgacuacugggaaaggcuaaauu	NC_007121.7:35645081..35645146:+
+NC_007127.7_277	-5.2	0 +/- 0%	-	2	2	0	0	no	Dre-Mir-30-P1a_5p	Gmo-Mir-30-P1a_5p	-	-	uguaaacauccccgacuggaagc	aucuguguugugugugcuguauauggg	aucuguguugugugugcuguauauggguauaacugguuguucaugccuguaaacauccccgacuggaagc	NC_007127.7:25341402..25341472:+
+NC_007112.7_1	-5.8	0 +/- 0%	-	11	11	0	0	no	Dre-Mir-218-P4-v1_5p	Gmo-Mir-218-P2_5p	-	-	uugugcuugaucuaaccaugug	uguggaggaaauucagcgggguu	uguggaggaaauucagcgggguuuuccuuugugcuugaucuaaccaugug	NC_007112.7:23866862..23866912:+
+NC_007136.7_359	-6.5	0 +/- 0%	-	33	33	0	0	no	Dre-Let-7-P2b2a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguugugugg	acaggcuguuugcguggcu	acaggcuguuugcguggcugauguucguacagggugagguaguagguugugugg	NC_007136.7:2192657..2192711:+
+NC_007126.7_265	-7.3	0 +/- 0%	-	1	1	0	0	no	Dre-Mir-10-P3d1_5p	Gmo-Mir-10-P3b1_5p	-	-	ucccugagacccuaacuuguga	gcagguuggcgguuggucugcaaau	gcagguuggcgguuggucugcaaaugugccucucacaaucccugagacccuaacuuguga	NC_007126.7:21447662..21447722:+
+NC_007122.7_226	-8.5	0 +/- 0%	-	1186	1186	0	0	no	Dre-Let-7-P2b1a_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagauuguauaguu	auguuaguagcuuauuuaca	auguuaguagcuuauuuacaugguaaugcuugugcagugugagguaguagauuguauaguu	NC_007122.7:27503091..27503152:-
+NC_007115.7_66	-19.3	0.00 +/- 0.00	-	33	33	0	0	no	Dre-Let-7-P2b2b_5p	Gmo-Let-7-P1b1_5p	-	-	ugagguaguagguugugugg	auaaaaaguggcugucguggua	auaaaaaguggcugucgugguauuguggauuauugaacagugguguucggacagggugagguaguagguugugugg	NC_007115.7:18653211..18653287:-
+
+#miRBase miRNAs not detected by miRDeep2
+miRBase precursor id	total read count	mature read count(s)	star read count	remaining reads	UCSC browser	NCBI blastn	miRBase mature sequence(s)	miRBase star sequence(s)	miRBase precursor sequence

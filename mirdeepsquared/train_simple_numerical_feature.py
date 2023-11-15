@@ -1,16 +1,11 @@
 from tensorflow import keras
-#Make training reproducable
-keras.utils.set_random_seed(42)
-import tensorflow as tf
-tf.config.experimental.enable_op_determinism()
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
-from tensorflow import keras
+from .train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data
 from keras.saving import load_model
 
 import numpy as np
@@ -19,11 +14,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 
-if __name__ == '__main__':
-
-    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
-
-    X_train, Y_train, X_val, Y_val, X_test, Y_test = split_data(prepare_data(df))
+def train_simple_numerical_features(df):
+    X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
     numeric_features=X_train[2]
 
     single_numeric_data = numeric_features[ :,4].reshape(-1, 1) #Estimated probability
@@ -41,9 +33,6 @@ if __name__ == '__main__':
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy'])
     early_stopping = EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
     history = model.fit(single_numeric_data, Y_train, epochs=100, batch_size=16, validation_data=(X_val[2][ :,4], Y_val), callbacks=[early_stopping]) #verbose=0
- 
-    print(history.history)
-
-    model.save("train-simple-model.keras")
+    return (model, history)
 
 
