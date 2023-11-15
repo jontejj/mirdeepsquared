@@ -120,8 +120,9 @@ def print_basic_stats(df):
 
 def read_in_mirgene_db_sequences(mirgene_db_filepath):
     mirgene_sequences = set()
-    for record in screed.open(mirgene_db_filepath):
-        mirgene_sequences.add(record.sequence.lower())
+    with screed.open(mirgene_db_filepath) as seqfile:
+        for record in seqfile:
+            mirgene_sequences.add(record.sequence.lower())
     return mirgene_sequences
 
 def has_mirgene_db_sequence_in_it(sequence, mirgene_sequences):

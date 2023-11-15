@@ -38,11 +38,11 @@ def build_kmers(sequence, ksize):
 
 def read_kmers_from_file(filename, ksize):
     all_kmers = []
-    for record in screed.open(filename):
-        sequence = record.sequence
-        kmers = build_kmers(sequence, ksize)
-        all_kmers += kmers
-
+    with screed.open(filename) as seqfile:
+        for record in seqfile:
+            sequence = record.sequence
+            kmers = build_kmers(sequence, ksize)
+            all_kmers += kmers
     return all_kmers
 
 def kmers_from_list(list, ksize):
@@ -153,6 +153,7 @@ def prepare_data(df):
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
     df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
     df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
+    #TODO: create a mask feature from "exp" encoding where the mature and star sequences are
     return df
 
 def split_data(df):
