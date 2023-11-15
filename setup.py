@@ -149,7 +149,7 @@ setup(
     # executes the function `main` from this package when invoked:
     entry_points={  # Optional
         "console_scripts": [
-            "predict=mirdeepsquared.predict:main",
+            "predict=mirdeepsquared.predict_cmd:main",
             "extract-features=mirdeepsquared.extract_features:main",
             "train=mirdeepsquared.train:main",
         ],
