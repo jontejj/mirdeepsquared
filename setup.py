@@ -101,7 +101,7 @@ setup(
     keywords="miRDeep2, miRNA, deeplearning",  # Optional
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
-    package_dir={"": "mirdeepsquared"},  # Optional
+    #package_dir={"": "mirdeepsquared"},  # Optional
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
     #
@@ -111,7 +111,8 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(),  # Required
+    #packages=find_packages(),  # Required
+    packages=['mirdeepsquared'],
     #py_modules=["predict", "extract_features", "train", "train_simple_density_map"],
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
@@ -149,7 +150,7 @@ setup(
         "console_scripts": [
             "predict=mirdeepsquared.predict:main",
             "extract-features=mirdeepsquared.extract_features:main",
-            "train=mirdeepsquared.train_simple_density_map:main",
+            "train=mirdeepsquared.train:main",
         ],
     },
     # List additional URLs that are relevant to your project as a dict.

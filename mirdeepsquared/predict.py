@@ -3,7 +3,6 @@
 import sys
 import argparse
 
-from keras.src.utils.generic_utils import default
 from .extract_features import extract_features
 from .train import prepare_data
 import numpy as np
@@ -40,9 +39,12 @@ def predict_main(args):
         pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
         [print(location) for location, pred in zip(mature_slice['location'], pred) if pred == True]
     """
-    
-if __name__ == '__main__':
+
+def main():
     args = parse_args(sys.argv[1:])
     false_positives = predict_main(args)
     for false_positive in false_positives:
         print(false_positive)
+
+if __name__ == '__main__':
+    main()

@@ -1,6 +1,8 @@
 import os
 import screed # a library for reading in FASTA/FASTQ
 import glob
+import argparse
+import sys
 
 import numpy as np
 import pandas as pd
@@ -237,8 +239,17 @@ def save_result_to_csv(parameters, metrics):
         writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
 
-if __name__ == '__main__':
-    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
+def parse_args(args):
+    parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files')
+
+    parser.add_argument('dataset_path', help="Path to the pickle files") # positional argument
+    parser.add_argument('-o', '--output', help="Path where the model file will be saved", default="best-model.keras")
+
+    return parser.parse_args(args)
+
+def main():
+    args = parse_args(sys.argv[1:])
+    df = read_dataframes(list_of_pickle_files_in(args.dataset_path))
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
@@ -271,7 +282,10 @@ if __name__ == '__main__':
             best_model = model
             best_parameters = parameters
             best_metrics = metrics
-            best_model.save("best-model-not-seen-test.keras")
+            best_model.save(args.output)
 
     print("Best parameters: " + str(best_parameters))
     print("Best metrics: " + str(best_metrics))
+    
+if __name__ == '__main__':
+    main()

@@ -200,11 +200,13 @@ def extract_features_main(args):
     df = label_false_positive(df, false_positives, labels, true_positives)
     return df
 
-if __name__ == '__main__':
+def main():
     args = parse_args(sys.argv[1:])
     df = extract_features_main(args)
     
     pickle_output_file = args.pickle_output_file
     df.to_pickle(pickle_output_file)
-    
+
+if __name__ == '__main__':
+    main()
     
