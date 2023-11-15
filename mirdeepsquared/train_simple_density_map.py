@@ -17,7 +17,7 @@ from sklearn.metrics import f1_score
 #val accuracy 0.9343
 #test accuracy 0.913
 #percentage_change test accuracy was 1.0
-def train_density_map(df):
+def train_density_map(df, epochs=200):
     X_train, Y_train, X_val, Y_val, X_test, Y_test, locations_train, locations_val, locations_test = split_data(prepare_data(df))
     density_maps=X_train[1]
 
@@ -31,7 +31,7 @@ def train_density_map(df):
 
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy'])
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
-    history = model.fit(X_train[1], Y_train, epochs=200, batch_size=16, validation_data=(X_val[1], Y_val), callbacks=[early_stopping]) #verbose=0
+    history = model.fit(X_train[1], Y_train, epochs=epochs, batch_size=16, validation_data=(X_val[1], Y_val), callbacks=[early_stopping]) #verbose=0
 
     return (model, history)
 
