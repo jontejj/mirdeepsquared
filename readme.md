@@ -1,13 +1,20 @@
 # Mirdeepsquared 
 Mirdeepsquared uses a deep learning model that predicts if novel miRNA sequences in the output of miRDeep2 are false positives or not. This greatly reduces the amount of manual work that is currently needed to filter out the false positives.
 
+## Usage (with pip install)
+virtualenv mirdeepsquared-env -p python3.9
+source mirdeepsquared-env/bin/activate
+pip install mirdeepsquared==0.1.1
+predict path/to/your_result.csv path/to/your_output.mrd
 
-## Installing
+The output are your true positives (i.e likely to actually be novel miRNA:s)
+
+## Installing (from source)
 Use python 3.9 as tensorflow requires it
 
 ```
-virtualenv miRNA -p python3.9
-source miRNA/bin/activate
+virtualenv mirdeepsquared-env -p python3.9
+source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python train-simple-density-map.py
 ```
@@ -17,8 +24,8 @@ python train-simple-density-map.py
 git clone https://github.com/jontejj/mirdeepsquared.git
 cd mirdeepsquared
 module load python3/3.9.5
-virtualenv miRNA -p python3.9
-source miRNA/bin/activate
+virtualenv mirdeepsquared-env -p python3.9
+source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python train-simple-density-map.py
 ```

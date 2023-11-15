@@ -240,7 +240,7 @@ def save_result_to_csv(parameters, metrics):
         writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files')
+    parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('dataset_path', help="Path to the pickle files") # positional argument
     parser.add_argument('-o', '--output', help="Path where the model file will be saved", default="best-model.keras")
