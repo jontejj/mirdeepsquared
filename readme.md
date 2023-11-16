@@ -18,7 +18,7 @@ Use python 3.9 as tensorflow requires it
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
-python train-simple-density-map.py
+python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
 ```
 
 ### Installing on Uppmax
@@ -29,7 +29,7 @@ module load python3/3.9.5
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
-python train-simple-density-map.py
+python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
 ```
 
 Then you can use ```python predict.py your_result.csv your_output.mrd``` to get a list of the true positives

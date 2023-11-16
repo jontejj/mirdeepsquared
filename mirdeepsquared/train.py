@@ -166,7 +166,7 @@ def split_data(df):
 
     return (train, val, test)
 
-def to_xy_with_location(df):
+def to_x_with_location(df):
     locations = df['location'].values.tolist()
     consensus_texts = np.asarray(df['consensus_sequence_as_sentence'].values.tolist())
     density_maps = np.asarray(df['read_density_map_percentage_change'].values.tolist())
@@ -174,19 +174,23 @@ def to_xy_with_location(df):
     numeric_features = np.asarray(df[numeric_feature_names])
 
     structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
+    return ((consensus_texts, density_maps, numeric_features, structure_as_1D_array), locations)
+
+def to_xy_with_location(df):
+    X, locations = to_x_with_location(df)
     y_data = np.asarray(df['false_positive'].values.astype(np.float32))
-    return (consensus_texts, density_maps, numeric_features, structure_as_1D_array), y_data, locations
+    return (X, y_data, locations)
 
 #Best on test set (99.4%): batch_sizes = [16], nr_of_epochs = [8], model_sizes = [16], learning_rates = [0.0003], regularize = [False] (cheated though, because the hyperparameters were tuned against the test set)
 #When max_val_f1_score was used the best parameters were: batch_sizes = [16], nr_of_epochs = [100], model_sizes = [64], learning_rates = [0.003], regularize = [True]
 def generate_hyperparameter_combinations():
     batch_sizes = [16] #[1, 2, 4, 8, 16, 32, 64, 128, 256] # 
-    nr_of_epochs = [100] #[1, 2, 4, 8, 16] # 
-    model_sizes = [8, 16, 64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
+    nr_of_epochs = [2] #[1, 2, 4, 8, 16] # 
+    model_sizes = [16] #[8, 16, 64] #[8, 16, 32, 64, 128, 256, 512, 1024, 2048] #
     learning_rates = [0.003] #[0.03, 0.003, 0.0003] # 
     regularize = [True] #[True, False] # 
-    dropout_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
-    weight_constraints = [1.0, 2.0, 3.0, 4.0, 5.0]
+    dropout_rates = [0.3] # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]
+    weight_constraints = [2.0] # [1.0, 2.0, 3.0, 4.0, 5.0]
     print(f'Will generate {len(batch_sizes) * len(nr_of_epochs) * len(model_sizes) * len(learning_rates) * len(regularize) * len(dropout_rates) * len(weight_constraints)} combinations of hyperparameters')
     parameters = list()
     for batch_size in batch_sizes:
@@ -228,14 +232,15 @@ def generate_hyperparameter_combinations():
         print("Storing training results in train-results.csv")
         with open('train-results.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'dropout_rate', 'weight_constraint', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'test_accuracy', 'test_F1-score', 'lowest_val_loss', 'max_val_f1_score'])
+            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'dropout_rate', 'weight_constraint', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'test_accuracy', 'test_F1-score', 'lowest_val_loss', 'max_val_f1_score', 'best_epoch'])
 
     return (parameters, best_f1_score, lowest_val_loss, max_val_f1_score)
 
 def save_result_to_csv(parameters, metrics):
+    history = metrics['history'].history
     with open('train-results.csv', 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , metrics['history']['accuracy'][-1], metrics['history']['loss'][-1], metrics['history']['val_accuracy'][-1], metrics['history']['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score']])
+        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , history['accuracy'][-1], history['loss'][-1], history['val_accuracy'][-1], history['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score'], metrics['best_epoch']])
 
 def parse_args(args):
     parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -269,12 +274,13 @@ def train_main(dataset_path, model_output_path):
         history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], validation_data=(X_val, Y_val), callbacks=[early_stopping]) #verbose=0
         lowest_val_loss = min(history.history['val_loss'])
         max_val_f1_score = max(history.history['val_f1_score'])
+        best_epoch = np.argmax(history.history['val_f1_score']) + 1
         pred = model.predict(X_test)
         pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
         print(f'Test accuracy: {accuracy_score(Y_test,pred)}. Lowest val loss: {lowest_val_loss}. Max val F1-score: {max_val_f1_score}.')
         F1_score = f1_score(Y_test,pred)
         accuracy = accuracy_score(Y_test,pred)
-        metrics = {'test_accuracy' : accuracy, 'test_F1-score' : F1_score, 'lowest_val_loss' : lowest_val_loss, 'max_val_f1_score' : max_val_f1_score, 'history' : history.history}
+        metrics = {'test_accuracy' : accuracy, 'test_F1-score' : F1_score, 'lowest_val_loss' : lowest_val_loss, 'max_val_f1_score' : max_val_f1_score, 'best_epoch': best_epoch, 'history' : history}
         save_result_to_csv(parameters, metrics)
         if max_val_f1_score > best_metrics['max_val_f1_score']:
             best_model = model
