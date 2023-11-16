@@ -15,9 +15,9 @@ if __name__ == '__main__':
     train, val, test = split_data(prepare_data(df))
     X_test, Y_test, locations_test = to_xy_with_location(test)
     #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
-    model = load_model("train-simple-model.keras") #load_model("best-model-not-seen-test.keras")
+    model = load_model("mirdeepsquared/train-simple-model.keras") #load_model("best-model-not-seen-test.keras")
 
-    pred = model.predict(X_test[1]) #X_test
+    pred = model.predict([X_test[4], X_test[1]]) #X_test
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
     print("Confusion matrix:")
     print(confusion_matrix(Y_test,pred))

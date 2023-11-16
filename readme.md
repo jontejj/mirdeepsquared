@@ -9,7 +9,7 @@ pip install mirdeepsquared
 predict path/to/your_result.csv path/to/your_output.mrd
 ```
 
-The output are your true positives (i.e likely to actually be novel miRNA:s)
+The output are your true positives, i.e highly likely to actually be novel miRNA:s.
 
 ## Installing (from source)
 Use python 3.9 as tensorflow requires it
@@ -18,7 +18,9 @@ Use python 3.9 as tensorflow requires it
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
+python3 -m pip install -e .
 python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
+python mirdeepsquared/predict_cmd.py -m hyper-parameter-tuned-model.keras path/to/your_result.csv path/to/your/output.mrd
 ```
 
 ### Installing on Uppmax
@@ -32,7 +34,7 @@ pip install -r requirements.txt
 python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
 ```
 
-Then you can use ```python predict.py your_result.csv your_output.mrd``` to get a list of the true positives
+Then you can use ```python mirdeepsquared/predict_cmd.py your_result.csv your_output.mrd``` to get a list of the true positives
 
 # How Mirdeepsquared was developed
 

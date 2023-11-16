@@ -1,7 +1,7 @@
 from tensorflow import keras
 from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
@@ -16,6 +16,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.utils.class_weight import compute_class_weight
 from imblearn.over_sampling import RandomOverSampler
+from keras.regularizers import l1_l2
+from keras.regularizers import l2
 
 #val accuracy 0.9343
 #test accuracy 0.913
@@ -27,24 +29,41 @@ def train_density_map(df, epochs=200):
     X_val, Y_val, _ = to_xy_with_location(val)
 
     density_maps=X_train[1]
+    location_of_mature_star_and_hairpin = X_train[4]
+    X_val_two_features = [X_val[4], X_val[1]]
 
-    ros = RandomOverSampler(random_state=42)
-    density_maps_resampled, Y_train_resampled = ros.fit_resample(X_train[1], Y_train)
+    #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
+    l1_strength = 0.1
+    l2_strength = 0.1 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
 
-    #TODO: also use "exp" feature so that the model can understand if the slope is for the mature or the star sequence
-    input = Input(shape=(111,), dtype='int32', name='density_map')
-    density_map_normalizer_layer = Normalization(mean=np.mean(density_maps, axis=0), variance=np.var(density_maps, axis=0))(input)
-    dense_layer = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=2.5, seed=42))(density_map_normalizer_layer)
+    #ros = RandomOverSampler(random_state=42)
+    #X_train_resampled, Y_train_resampled = ros.fit_resample([density_maps, location_of_mature_star_and_hairpin], Y_train)
+
+    input_location_of_mature_star_and_hairpin = Input(shape=(111,4), dtype='float32', name='location_of_mature_star_and_hairpin')
+    mean_values = np.mean(density_maps, axis=0)
+    variance_values = np.var(density_maps, axis=0)
+    input_density_maps = Input(shape=(111,), dtype='float32', name='density_map')
+    density_map_normalizer_layer = Normalization(mean=mean_values, variance=variance_values)(input_density_maps)
+
+    density_map_reshaped_as_rows = Reshape((111,1), input_shape=(111,))(density_map_normalizer_layer)
+
+    concatenated = Concatenate(axis=-1)([input_location_of_mature_star_and_hairpin, density_map_reshaped_as_rows])
+    flatten_layer_structure = Flatten()(concatenated)
+
+    dense_layer = Dense(100, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=2.5, seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength))(flatten_layer_structure)
     output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
 
-    model = Model(inputs=[input], outputs=output_layer)
+    model = Model(inputs=[input_location_of_mature_star_and_hairpin, input_density_maps], outputs=output_layer)
 
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
+    model.summary()
     early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
-    class_weights = compute_class_weight('balanced', classes=np.unique(Y_train_resampled), y=Y_train_resampled)
+    #Y_train_resampled
+    class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
     class_weights_dict = dict(enumerate(class_weights))
 
-    history = model.fit(density_maps_resampled, Y_train_resampled, class_weight=class_weights_dict, epochs=epochs, batch_size=16, validation_data=(X_val[1], Y_val), callbacks=[early_stopping]) #verbose=0
+    #X_train_resampled
+    history = model.fit([location_of_mature_star_and_hairpin, density_maps], Y_train, class_weight=class_weights_dict, epochs=epochs, batch_size=16, validation_data=(X_val_two_features, Y_val), callbacks=[early_stopping]) #verbose=0
 
     return (model, history)
 

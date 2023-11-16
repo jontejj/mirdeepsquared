@@ -69,7 +69,7 @@ def build_structure_1D(pri_struct, mm_struct, mm_offset):
     # Convert the string to a 1D array
     array_1d = [char_mapping[char] for char in pri_struct_truncated]
     array_1d[mm_offset:mm_offset+len(mm_struct)] = [mm_mapping[digit] for digit in array_1d[mm_offset:mm_offset+len(mm_struct)]]
-
+    #TODO: one hot encode?
     return array_1d
 
 def get_model(consensus_sequences, density_maps, numeric_features, model_size = 64, initial_learning_rate = 0.0003, batch_size = 6, regularize = True, dropout_rate=0.8, weight_constraint=3.0):
@@ -141,6 +141,20 @@ def calc_percentage_change(numbers):
     data_no_zeros = np.where(numbers == 0, EPSILON, numbers)
     percentage_change = np.diff(numbers) / data_no_zeros[:-1] * 100
     return percentage_change
+
+"""
+Converts 'fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff' to an array like:
+          00000000000000000000000000000001111111111111111111111122222222222222223333333333333333333333000000000000000000
+"""
+def encode_exp(exp):
+    #TODO: how to actually use all 112 chars? 111 because this feature is combined with read_density_map_percentage_change
+    exp_padded = exp.ljust(111, 'f')
+    exp_truncated = exp_padded[:111]
+
+    char_mapping = {'f': 0, 'S': 1, 'l': 2, 'M': 3}
+    indices = [char_mapping[char] for char in exp_truncated]
+    one_hot_encoded = np.eye(len(char_mapping))[indices]
+    return one_hot_encoded
     
 
 def prepare_data(df):
@@ -155,6 +169,7 @@ def prepare_data(df):
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
     df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
     df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
+    df['location_of_mature_star_and_hairpin'] = df.apply(lambda x: encode_exp(x['exp']), axis=1)
     #TODO: create a mask feature from "exp" encoding where the mature and star sequences are
     return df
 
@@ -174,7 +189,8 @@ def to_x_with_location(df):
     numeric_features = np.asarray(df[numeric_feature_names])
 
     structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
-    return ((consensus_texts, density_maps, numeric_features, structure_as_1D_array), locations)
+    location_of_mature_star_and_hairpin = np.asarray(df['location_of_mature_star_and_hairpin'].values.tolist())
+    return ((consensus_texts, density_maps, numeric_features, structure_as_1D_array, location_of_mature_star_and_hairpin), locations)
 
 def to_xy_with_location(df):
     X, locations = to_x_with_location(df)

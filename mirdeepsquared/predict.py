@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from mirdeepsquared.extract_features import extract_features
-from mirdeepsquared.train import prepare_data
+from mirdeepsquared.train import prepare_data, to_x_with_location
 import numpy as np
 from keras.saving import load_model
 
