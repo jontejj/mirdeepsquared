@@ -29,8 +29,8 @@ if __name__ == '__main__':
     other_species = list_of_pickle_files_in("resources/dataset/other_species")
     df = read_dataframes(human) # human + other_species) # 
 
-    #model, history = train_main("resources/dataset", "best-not-seen-test-model.keras")
-    model, history = train_density_map(df)
+    model, history = train_main("resources/dataset", "best-not-seen-test-model.keras", "mirdeepsquared/default-hyperparameters.yaml", "trainer-train-results.csv")
+    #model, history = train_density_map(df)
     #model, history = train_simple_numerical_features(df)
     #model, history = train_simple_structure(df)
     print(history.history)

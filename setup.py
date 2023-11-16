@@ -142,7 +142,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={  # Optional
-        "mirdeepsquared": ["train-simple-model.keras"],
+        "mirdeepsquared": ["train-simple-model.keras", "default-hyperparameters.yaml"],
     },
     include_package_data=True,
     # Entry points. The following would provide a command called `sample` which

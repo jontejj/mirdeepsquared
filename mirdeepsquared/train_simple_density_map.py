@@ -27,14 +27,13 @@ def train_density_map(df, epochs=200):
     
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
-
-    density_maps=X_train[1]
-    location_of_mature_star_and_hairpin = X_train[4]
-    X_val_two_features = [X_val[4], X_val[1]]
+    density_maps=X_train[2]
+    location_of_mature_star_and_hairpin = X_train[1]
+    X_val_two_features = [X_val[1], X_val[2]]
 
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
-    l1_strength = 0.1
-    l2_strength = 0.1 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
+    l1_strength = 0.01
+    l2_strength = 0.01 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
 
     #ros = RandomOverSampler(random_state=42)
     #X_train_resampled, Y_train_resampled = ros.fit_resample([density_maps, location_of_mature_star_and_hairpin], Y_train)
@@ -50,7 +49,7 @@ def train_density_map(df, epochs=200):
     concatenated = Concatenate(axis=-1)([input_location_of_mature_star_and_hairpin, density_map_reshaped_as_rows])
     flatten_layer_structure = Flatten()(concatenated)
 
-    dense_layer = Dense(100, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=2.5, seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength))(flatten_layer_structure)
+    dense_layer = Dense(1000, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=2.5, seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength))(flatten_layer_structure)
     output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
 
     model = Model(inputs=[input_location_of_mature_star_and_hairpin, input_density_maps], outputs=output_layer)

@@ -7,7 +7,7 @@ tests/__pycache__/**
 dist/**
 miRNA.code-workspace/
 **/*.keras
-train-results*.csv
+*train-results*.csv
 resources/not_version_controlled/**
 mirdeepsquared.egg-info/**
 mirdeepsquared/mirdeepsquared.egg-info/**

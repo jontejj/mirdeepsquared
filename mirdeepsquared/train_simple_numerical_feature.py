@@ -18,7 +18,7 @@ def train_simple_numerical_features(df):
     train, val, _ = split_data(prepare_data(df))
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
-    numeric_features=X_train[2]
+    numeric_features=X_train[4]
 
     single_numeric_data = numeric_features[ :,4].reshape(-1, 1) #Estimated probability
 
@@ -34,7 +34,7 @@ def train_simple_numerical_features(df):
 
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy'])
     early_stopping = EarlyStopping(monitor='val_loss', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
-    history = model.fit(single_numeric_data, Y_train, epochs=100, batch_size=16, validation_data=(X_val[2][ :,4], Y_val), callbacks=[early_stopping]) #verbose=0
+    history = model.fit(single_numeric_data, Y_train, epochs=100, batch_size=16, validation_data=(X_val[4][ :,4], Y_val), callbacks=[early_stopping]) #verbose=0
     return (model, history)
 
 

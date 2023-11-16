@@ -1,0 +1,7 @@
+batch_sizes : [16]
+nr_of_epochs : [2]
+model_sizes : [16]
+learning_rates : [0.003]
+regularize : [True]
+dropout_rates : [0.3, 0.99]
+weight_constraints : [2.0]
