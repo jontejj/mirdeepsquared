@@ -25,8 +25,8 @@ def train_simple_structure(df):
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.0001
     l2_strength = 0.001 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
-    input = Input(shape=(112,), dtype='float32', name='structure_as_1D_array')
-    embedding_layer = Embedding(input_dim=8, output_dim=128, input_length=112, mask_zero=True)(input)
+    input = Input(shape=(111,), dtype='float32', name='structure_as_1D_array')
+    embedding_layer = Embedding(input_dim=17, output_dim=128, input_length=111, mask_zero=True)(input)
     bidirectional_lstm = Bidirectional(LSTM(128))(embedding_layer)
     #dense_after_lstm = Dense(64, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(bidirectional_lstm)
     #reshaped_lstm = Reshape((1, 64), input_shape=(64,))(dense_after_lstm)

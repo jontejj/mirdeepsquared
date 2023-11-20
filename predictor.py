@@ -15,17 +15,29 @@ if __name__ == '__main__':
     
     train, val, test = split_data(prepare_data(df))
     X_test, Y_test, locations_test = to_xy_with_location(test)
+    X_val, Y_val, locations_val = to_xy_with_location(val)
     #TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
-    model = load_model("mirdeepsquared/train-simple-model.keras") #load_model("resources/not_version_controlled/models/best-not-seen-test-model.keras") #
+    model = load_model("mirdeepsquared/train-simple-model.keras")
 
     pred = model.predict(X_test) #[X_test[1], X_test[2]]) #
     pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
-    print("Confusion matrix:")
+    print("Test Confusion matrix:")
     print(confusion_matrix(Y_test,pred))
-    print("Accuracy: " + str(accuracy_score(Y_test,pred)))
-    print("F1-score: " + str(f1_score(Y_test,pred)))
+    print("Test Accuracy: " + str(accuracy_score(Y_test,pred)))
+    print("Test F1-score: " + str(f1_score(Y_test,pred)))
     for i in range(0, len(pred)):
         if pred[i] != Y_test[i]:
             source_pickle = df[(df['location'] == locations_test[i])]['source_pickle'].array[0]
             print(f'Predicted: {not pred[i]} positive for {locations_test[i]}, real is: {not bool(Y_test[i])} positive. Source pickle: {source_pickle}')
+
+    pred = model.predict(X_val)
+    pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
+    print("Val Confusion matrix:")
+    print(confusion_matrix(Y_val,pred))
+    print("Val Accuracy: " + str(accuracy_score(Y_val,pred)))
+    print("Val F1-score: " + str(f1_score(Y_val,pred)))
+    for i in range(0, len(pred)):
+        if pred[i] != Y_val[i]:
+            source_pickle = df[(df['location'] == locations_val[i])]['source_pickle'].array[0]
+            print(f'Predicted: {not pred[i]} positive for {locations_val[i]}, real is: {not bool(Y_val[i])} positive. Source pickle: {source_pickle}')
 

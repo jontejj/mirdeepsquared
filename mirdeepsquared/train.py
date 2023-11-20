@@ -57,35 +57,36 @@ def kmers_from_list(list, ksize):
 
     return all_kmers
 
-def build_structure_1D(pri_struct, mm_struct, mm_offset):
-    pri_struct_padded = pri_struct.ljust(112, '-')
+def build_structure_1D(pri_struct, mm_struct, mm_offset, exp):
+    pri_struct_padded = pri_struct.ljust(111, '-')
+    pri_struct_truncated = pri_struct_padded[:111]
 
-    pri_struct_truncated = pri_struct_padded[:112]
+    exp_padded = exp.ljust(111, 'f')
+    exp_truncated = exp_padded[:111]
 
-    # Define a mapping for characters
-    char_mapping = {'-': 0, '.': 1, '(': 2, ')': 3}
+    # Defines a vocabalary index for structural information, S = Star, l = hairpin, M = Mature
+    char_mappings = {}
+    char_mappings['f'] = {'-': 0, '.': 1, '(': 2, ')': 3}
+    char_mappings['S'] = {'-': 4, '.': 5, '(': 6, ')': 7}
+    char_mappings['l'] = {'-': 8, '.': 9, '(': 10, ')': 11}
+    char_mappings['M'] = {'-': 12, '.': 13, '(': 14, ')': 15}
 
-    #TODO: can mm_struct be expected to match pri_struct?
-    mm_mapping = {0: 4, 1: 5, 2: 6, 3:7}
-
-    # Convert the string to a 1D array
-    array_1d = [char_mapping[char] for char in pri_struct_truncated]
-    array_1d[mm_offset:mm_offset+len(mm_struct)] = [mm_mapping[digit] for digit in array_1d[mm_offset:mm_offset+len(mm_struct)]]
-    #TODO: one hot encode?
-    return array_1d
+    merged_structure_information = [char_mappings[x][pri_struct_truncated[ind]] for ind, x in enumerate(exp_truncated)]
+    return merged_structure_information
 
 def get_model(consensus_sequences, density_maps, numeric_features, model_size = 64, initial_learning_rate = 0.0003, batch_size = 6, regularize = True, dropout_rate=0.8, weight_constraint=3.0):
     max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)
     seq_length = len(max(consensus_sequences, key=len))
 
     #Input 1 - consensus_sequence
+    #TODO: use precursor sequence with LSTM instead?
     input_layer_consensus_sequence = Input(shape=(1,), dtype='string', name='consensus_sequence')
     vectorize_layer = TextVectorization(output_mode="int", input_shape=(1,))
     vectorized_layer = vectorize_layer(input_layer_consensus_sequence)
     vectorize_layer.adapt(consensus_sequences)
     embedding_layer = Embedding(input_dim=max_features, output_dim=model_size, input_length=seq_length)(vectorized_layer)
     conv1d_layer = Conv1D(filters=model_size, kernel_size=3, activation='relu')(embedding_layer)
-    maxpooling_layer = GlobalMaxPooling1D()(conv1d_layer)
+    consensus_maxpooling_layer = GlobalMaxPooling1D()(conv1d_layer)
 
     #batch_norm_layer = BatchNormalization(trainable=True)(maxpooling_layer) #TODO: remember to set trainable=False when inferring
     
@@ -104,32 +105,26 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     density_map_dense = Dense(model_size * 32, activation='relu')(flatten_layer_2_3)
 
     #Input 4 - structural information
-    input_structure_as_matrix = Input(shape=(112,), dtype='float32', name='structure_as_1D_array')
-    structure_embedding = Embedding(input_dim=8, output_dim=(model_size * 4), input_length=112)(input_structure_as_matrix)
-    structure_lstm = Bidirectional(LSTM(model_size * 4))(structure_embedding)
-    #TODO: how to pass input_location_of_mature_star_and_hairpin to structure_lstm?
-    
-    #Input 5 - numerical features #TODO: 6?
+    input_structure_as_matrix = Input(shape=(111,), dtype='float32', name='structure_as_1D_array')
+    structure_embedding = Embedding(input_dim=17, output_dim=(128), input_length=111, mask_zero=True)(input_structure_as_matrix)
+    bidirectional_lstm = Bidirectional(LSTM(128))(structure_embedding)
+    structure_dense = Dense(model_size * 32, activation='relu')(bidirectional_lstm)
+
+    #Input 5 - numerical features
     input_layer_numeric_features = Input(shape=(4,), dtype='float32', name='numeric_features')
     normalizer_layer = Normalization()
     normalizer_layer.adapt(numeric_features)
-    numeric_features_dense = Dense(model_size, activation='relu')(normalizer_layer(input_layer_numeric_features))
+    numeric_features_dense = Dense(model_size * 4, activation='relu')(normalizer_layer(input_layer_numeric_features))
 
-    #reshaped_as_matrix = Reshape((8, 14, 1), input_shape=(112,))(input_structure_as_matrix)
-    #TODO: Normalize input_structure_as_matrix?
-    #conv2d_layer = Conv2D(64, kernel_size=(3, 3), activation='relu', input_shape=(batch_size, 8, 14, 1), padding='same')(reshaped_as_matrix)
-    #matrix_dense = Dense(model_size, activation='relu')(conv2d_layer)
-    flatten_layer_structure = Flatten()(structure_lstm) #matrix_dense
-
-    concatenated = Concatenate()([maxpooling_layer, density_map_dense, numeric_features_dense, flatten_layer_structure])
+    concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense])
 
     if regularize:
-        dense_layer = Dense(10000, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(concatenated)
-        dropout_layer = Dropout(dropout_rate, input_shape=(10000,))(dense_layer)
+        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(concatenated)
+        dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(dense_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
     else:
-        dense_layer = Dense(10000, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated)
-        dropout_layer = Dropout(dropout_rate, input_shape=(10000,))(dense_layer)
+        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated)
+        dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(dense_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
 
     model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features], outputs=output_layer)
@@ -161,7 +156,6 @@ Converts 'fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllll
           00000000000000000000000000000001111111111111111111111122222222222222223333333333333333333333000000000000000000
 """
 def encode_exp(exp):
-    #TODO: how to actually use all 112 chars? 111 because this feature is combined with read_density_map_percentage_change
     exp_padded = exp.ljust(111, 'f')
     exp_truncated = exp_padded[:111]
 
@@ -181,10 +175,9 @@ def prepare_data(df):
     #feature_interaction = feature1 * feature2
     #feature_log = np.log(feature1) or np.log(feature1) / np.log(feature2)
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
-    df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset']), axis=1)
+    df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset'], x['exp']), axis=1)
     df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
     df['location_of_mature_star_and_hairpin'] = df.apply(lambda x: encode_exp(x['exp']), axis=1)
-    #TODO: create a mask feature from "exp" encoding where the mature and star sequences are
     return df
 
 def split_data(df):
@@ -296,7 +289,6 @@ def train_main(dataset_path, model_output_path, hyperparameter_file, train_resul
     for parameters in parameters:
         print("Parameters: " + str(parameters))
         model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint = parameters['weight_constraint'])
-        
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
         
         history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping]) #verbose=0
