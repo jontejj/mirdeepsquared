@@ -44,12 +44,12 @@ def process_mrd_file(mrd_filepath):
                     read_density_map[i] += repeated_count
                 i+=1
         elif x == "\n" and location_name not in input_features:
-            input_features[location_name] = { "pri_seq" : pri_seq,
-                                                    "pri_struct" : pri_struct,
-                                                    "exp" : exp,
+            input_features[location_name] = { "pri_seq": pri_seq,
+                                                    "pri_struct": pri_struct,
+                                                    "exp": exp,
                                                     "mature_read_count": mature_read_count,
-                                                    "star_read_count":star_read_count,
-                                                    "read_density_map":read_density_map}
+                                                    "star_read_count": star_read_count,
+                                                    "read_density_map": read_density_map}
             read_density_map = np.zeros(112, dtype=np.int32)
     mrd.close()
     return input_features
@@ -85,7 +85,7 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
     result_file.close()
 
 def convert_to_dataframe(input_features):
-    input_features_as_lists_in_dict = {"location" : [], "pri_seq" : [],"pri_struct" : [], "exp" : [], "mature_read_count" : [], "star_read_count" : [], "estimated_probability" : [], "estimated_probability_uncertainty" : [], "significant_randfold" : [], "consensus_sequence" : [], "predicted_as_novel" : [], "mm_struct" : [], "mm_offset" : [], "read_density_map" : []}
+    input_features_as_lists_in_dict = {"location": [], "pri_seq": [],"pri_struct": [], "exp": [], "mature_read_count": [], "star_read_count": [], "estimated_probability": [], "estimated_probability_uncertainty": [], "significant_randfold": [], "consensus_sequence": [], "predicted_as_novel": [], "mm_struct": [], "mm_offset": [], "read_density_map": []}
     ignored_entries = 0
     for location, values in input_features.items():
         if 'predicted_as_novel' in values: #Ignore entries not in result.csv

@@ -101,7 +101,7 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
                     for reg in regularize:
                         for dropout in dropout_rates:
                             for weight_constraint in weight_constraints:
-                                parameters.append({'batch_size' : batch_size, 'epochs' : epochs, 'model_size'  : model_size, 'learning_rate' : lr, 'regularize' : reg, 'dropout_rate' : dropout, 'weight_constraint' : weight_constraint})
+                                parameters.append({'batch_size': batch_size, 'epochs': epochs, 'model_size': model_size, 'learning_rate': lr, 'regularize': reg, 'dropout_rate': dropout, 'weight_constraint': weight_constraint})
 
     best_mean_max_val_f1_score = 0
     #Resume grid search if there already are results
@@ -112,7 +112,7 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
             reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
             next(reader, None) #Skip header row
             for row in reader:
-                already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4] == 'True', 'dropout_rate' : float(row[5]), 'weight_constraint' : float(row[6])})
+                already_run_parameters.append({'batch_size': int(row[0]), 'epochs': int(row[1]), 'model_size': int(row[2]), 'learning_rate': float(row[3]), 'regularize': row[4] == 'True', 'dropout_rate': float(row[5]), 'weight_constraint': float(row[6])})
                 row_mean_max_val_f1_score = float(row[13])
                 if  row_mean_max_val_f1_score > best_mean_max_val_f1_score:
                     best_mean_max_val_f1_score = row_mean_max_val_f1_score
@@ -178,7 +178,7 @@ def train_main(dataset_path, model_output_path, hyperparameter_file, train_resul
         mean_max_val_f1_score = np.mean(max_val_f1_score)
         best_fold_index = np.argmax(max_val_f1_score)
         best_epoch = np.argmax(cv_history[best_fold_index].history['val_f1_score']) + 1
-        metrics = {'max_val_f1_score' : max(max_val_f1_score), 'mean_max_val_f1_score' : mean_max_val_f1_score, 'best_epoch': best_epoch, 'history' : cv_history[best_fold_index]}
+        metrics = {'max_val_f1_score': max(max_val_f1_score), 'mean_max_val_f1_score': mean_max_val_f1_score, 'best_epoch': best_epoch, 'history': cv_history[best_fold_index]}
         if mean_max_val_f1_score > best_mean_max_val_f1_score:
             best_mean_max_val_f1_score = mean_max_val_f1_score
             best_parameters = parameters
