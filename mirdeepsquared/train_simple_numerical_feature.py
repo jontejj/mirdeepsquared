@@ -5,7 +5,7 @@ from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Gl
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from mirdeepsquared.train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
+from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
 from keras.saving import load_model
 
 import numpy as np

@@ -19,7 +19,8 @@ virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python3 -m pip install -e .
-python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
+python split_dataset.py resources/dataset/ resources/dataset/split
+python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
 python mirdeepsquared/predict_cmd.py -m hyper-parameter-tuned-model.keras path/to/your_result.csv path/to/your/output.mrd
 ```
 
@@ -31,7 +32,8 @@ module load python3/3.9.5
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
-python mirdeepsquared/train.py resources/dataset -o hyper-parameter-tuned-model.keras
+python split_dataset.py resources/dataset/ resources/dataset/split
+python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
 ```
 
 Then you can use ```python mirdeepsquared/predict_cmd.py your_result.csv your_output.mrd``` to get a list of the true positives
@@ -79,6 +81,13 @@ python extract_features.py false_positives/result_08_11_2023_t_19_35_00.csv fals
 ```
 
 As the resulting dataset files, ```true_positives_TCGA_LUSC.pkl``` and ```false_positives_SRR2496781-84_bigger.pkl```, were small, they were checked into git in resources/dataset/ in order to make future training easier for people who want to improve the model. On top of this, the output.mrd and the result.csv for the false positives were also checked in to git.
+
+The data was then split into a holdout and a train dataset with ```split_dataset.py```:
+```
+python split_dataset.py resources/dataset/ resources/dataset/split
+```
+
+This created ```resources/dataset/split/holdout/holdout.pkl``` and ```resources/dataset/split/train/train.pkl```.
 
 The different train*.py files contain different models with varying performance. The best one so far is ```train-simple-density-map.py```, it gave 100% accuracy on the test set.
 

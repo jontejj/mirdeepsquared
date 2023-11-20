@@ -1,8 +1,7 @@
 import os
-import screed # a library for reading in FASTA/FASTQ
-import glob
 import argparse
 import sys
+from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, to_xy_with_location
 
 import numpy as np
 import pandas as pd
@@ -22,57 +21,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.model_selection import StratifiedKFold
 
 import csv
 import yaml
-
-KMER_SIZE = 6
-NUCLEOTIDE_NR = 5 #U C A G D (D for Dummy)
-EPSILON = 1e-7
-
-def build_kmers(sequence, ksize):
-    kmers = []
-    n_kmers = len(sequence) - ksize + 1
-
-    for i in range(n_kmers):
-        kmer = sequence[i:i + ksize]
-        kmers.append(kmer)
-
-    return kmers
-
-def read_kmers_from_file(filename, ksize):
-    all_kmers = []
-    with screed.open(filename) as seqfile:
-        for record in seqfile:
-            sequence = record.sequence
-            kmers = build_kmers(sequence, ksize)
-            all_kmers += kmers
-    return all_kmers
-
-def kmers_from_list(list, ksize):
-    all_kmers = []
-    for sequence in list:
-        kmers = build_kmers(sequence, ksize)
-        all_kmers += kmers
-
-    return all_kmers
-
-def build_structure_1D(pri_struct, mm_struct, mm_offset, exp):
-    pri_struct_padded = pri_struct.ljust(111, '-')
-    pri_struct_truncated = pri_struct_padded[:111]
-
-    exp_padded = exp.ljust(111, 'f')
-    exp_truncated = exp_padded[:111]
-
-    # Defines a vocabalary index for structural information, S = Star, l = hairpin, M = Mature
-    char_mappings = {}
-    char_mappings['f'] = {'-': 0, '.': 1, '(': 2, ')': 3}
-    char_mappings['S'] = {'-': 4, '.': 5, '(': 6, ')': 7}
-    char_mappings['l'] = {'-': 8, '.': 9, '(': 10, ')': 11}
-    char_mappings['M'] = {'-': 12, '.': 13, '(': 14, ')': 15}
-
-    merged_structure_information = [char_mappings[x][pri_struct_truncated[ind]] for ind, x in enumerate(exp_truncated)]
-    return merged_structure_information
 
 def get_model(consensus_sequences, density_maps, numeric_features, model_size = 64, initial_learning_rate = 0.0003, batch_size = 6, regularize = True, dropout_rate=0.8, weight_constraint=3.0):
     max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)
@@ -133,77 +85,6 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     model.compile(optimizer=Adam(learning_rate=lr_schedule), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
     return model
 
-def list_of_pickle_files_in(path):
-    return glob.glob(path + "/*.pkl")
-
-def read_dataframes(paths):
-    dfs = []
-    for path in paths:
-        df = pd.read_pickle(path)
-        df['source_pickle'] = os.path.basename(path)
-        dfs.append(df)
-
-    return pd.concat(dfs, axis=0)
-
-def calc_percentage_change(numbers):
-    #np.diff(numbers) = rate of change
-    data_no_zeros = np.where(numbers == 0, EPSILON, numbers)
-    percentage_change = np.diff(numbers) / data_no_zeros[:-1] * 100
-    return percentage_change
-
-"""
-Converts 'fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff' to an array like:
-          00000000000000000000000000000001111111111111111111111122222222222222223333333333333333333333000000000000000000
-"""
-def encode_exp(exp):
-    exp_padded = exp.ljust(111, 'f')
-    exp_truncated = exp_padded[:111]
-
-    char_mapping = {'f': 0, 'S': 1, 'l': 2, 'M': 3}
-    indices = [char_mapping[char] for char in exp_truncated]
-    one_hot_encoded = np.eye(len(char_mapping))[indices]
-    return one_hot_encoded
-    
-
-def prepare_data(df):
-    
-    #From https://github.com/dhanush77777/DNA-sequencing-using-NLP/blob/master/DNA%20sequencing.ipynb
-    df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
-    df['consensus_sequence_as_sentence'] = df.apply(lambda x: ' '.join(x['consensus_sequence_kmers']), axis=1)
-    #TODO: create other features for mature vs star, such as:
-    #feature_difference = feature1 - feature2
-    #feature_interaction = feature1 * feature2
-    #feature_log = np.log(feature1) or np.log(feature1) / np.log(feature2)
-    df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
-    df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset'], x['exp']), axis=1)
-    df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
-    df['location_of_mature_star_and_hairpin'] = df.apply(lambda x: encode_exp(x['exp']), axis=1)
-    return df
-
-def split_data(df):
-    train=df.sample(frac=0.6,random_state=42)
-    tmp=df.drop(train.index)
-    val=tmp.sample(frac=0.5,random_state=42)
-    test=tmp.drop(val.index)
-
-    return (train, val, test)
-
-def to_x_with_location(df):
-    locations = df['location'].values.tolist()
-    consensus_texts = np.asarray(df['consensus_sequence_as_sentence'].values.tolist())
-    density_maps = np.asarray(df['read_density_map_percentage_change'].values.tolist())
-    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio'] #, 'estimated_probability', 'estimated_probability_uncertainty'
-    numeric_features = np.asarray(df[numeric_feature_names])
-
-    structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
-    location_of_mature_star_and_hairpin = np.asarray(df['location_of_mature_star_and_hairpin'].values.tolist())
-    return ((consensus_texts, location_of_mature_star_and_hairpin, density_maps, structure_as_1D_array, numeric_features), locations)
-
-def to_xy_with_location(df):
-    X, locations = to_x_with_location(df)
-    y_data = np.asarray(df['false_positive'].values.astype(np.float32))
-    return (X, y_data, locations)
-
 #Best on test set (99.4%): batch_sizes = [16], nr_of_epochs = [8], model_sizes = [16], learning_rates = [0.0003], regularize = [False] (cheated though, because the hyperparameters were tuned against the test set)
 #When max_val_f1_score was used the best parameters were: batch_sizes = [16], nr_of_epochs = [100], model_sizes = [64], learning_rates = [0.003], regularize = [True]
 def generate_hyperparameter_combinations(hyperparameter_file, train_results_file):
@@ -227,10 +108,8 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
                         for dropout in dropout_rates:
                             for weight_constraint in weight_constraints:
                                 parameters.append({'batch_size' : batch_size, 'epochs' : epochs, 'model_size'  : model_size, 'learning_rate' : lr, 'regularize' : reg, 'dropout_rate' : dropout, 'weight_constraint' : weight_constraint})
-    
-    best_f1_score = 0
-    lowest_val_loss = 9223372036854775807
-    max_val_f1_score = 0
+
+    best_mean_max_val_f1_score = 0
     #Resume grid search if there already are results
     if os.path.exists(train_results_file):
         already_run_parameters = list()
@@ -240,15 +119,9 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
             next(reader, None) #Skip header row
             for row in reader:
                 already_run_parameters.append({'batch_size' : int(row[0]), 'epochs' : int(row[1]), 'model_size'  : int(row[2]), 'learning_rate' : float(row[3]), 'regularize' : row[4] == 'True', 'dropout_rate' : float(row[5]), 'weight_constraint' : float(row[6])})
-                f1_score = float(row[9])
-                if  f1_score > best_f1_score:
-                    best_f1_score = f1_score
-                row_lowest_val_loss = float(row[10])
-                if  row_lowest_val_loss < lowest_val_loss:
-                    lowest_val_loss = row_lowest_val_loss
-                row_max_val_f1_score = float(row[11])
-                if  row_max_val_f1_score > max_val_f1_score:
-                    max_val_f1_score = row_max_val_f1_score
+                row_mean_max_val_f1_score = float(row[13])
+                if  row_mean_max_val_f1_score > best_mean_max_val_f1_score:
+                    best_mean_max_val_f1_score = row_mean_max_val_f1_score
 
         print(f'Removing {len(already_run_parameters)} parameter combinations already run')
         for parameter in already_run_parameters:
@@ -258,59 +131,70 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
         print("Storing training results in " + train_results_file)
         with open(train_results_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'dropout_rate', 'weight_constraint', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'test_accuracy', 'test_F1-score', 'lowest_val_loss', 'max_val_f1_score', 'best_epoch'])
+            writer.writerow(['batch_size', 'epochs', 'model_size', 'learning_rate', 'regularize', 'dropout_rate', 'weight_constraint', 'accuracy', 'loss', 'val_accuracy', 'val_loss', 'max_val_f1_score', 'best_epoch', 'mean_max_val_f1_score'])
 
-    return (parameters, best_f1_score, lowest_val_loss, max_val_f1_score)
+    return (parameters, best_mean_max_val_f1_score)
 
 def save_result_to_csv(parameters, metrics, train_results_file):
     history = metrics['history'].history
     with open(train_results_file, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , history['accuracy'][-1], history['loss'][-1], history['val_accuracy'][-1], history['val_loss'][-1], metrics['test_accuracy'], metrics['test_F1-score'], metrics['lowest_val_loss'], metrics['max_val_f1_score'], metrics['best_epoch']])
+        writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'] , history['accuracy'][-1], history['loss'][-1], history['val_accuracy'][-1], history['val_loss'][-1], metrics['max_val_f1_score'], metrics['best_epoch'], metrics['mean_max_val_f1_score']])
 
-def train_main(dataset_path, model_output_path, hyperparameter_file, train_results_file):
+def train_main(dataset_path, model_output_path, hyperparameter_file, train_results_file, cross_validation_folds=2):
     df = read_dataframes(list_of_pickle_files_in(dataset_path))
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
-    train, val, test = split_data(prepare_data(df))
-    X_train, Y_train, _ = to_xy_with_location(train)
-    X_val, Y_val, _ = to_xy_with_location(val)
-    X_test, Y_test, _ = to_xy_with_location(test)
 
-    class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
-    class_weights_dict = dict(enumerate(class_weights))
+    kfold = StratifiedKFold(n_splits=cross_validation_folds, shuffle=True, random_state=42)
 
-    parameters, best_f1_score, stored_lowest_val_loss, stored_max_val_f1_score = generate_hyperparameter_combinations(hyperparameter_file, train_results_file)
+    X, Y, _ = to_xy_with_location(prepare_data(df))
 
-    best_model = None
-    best_metrics = {'accuracy' : 0, 'test_F1-score' : best_f1_score, 'lowest_val_loss' : stored_lowest_val_loss, 'max_val_f1_score' : stored_max_val_f1_score}
+    parameters, best_mean_max_val_f1_score = generate_hyperparameter_combinations(hyperparameter_file, train_results_file)
+
     best_parameters = None
+    best_metrics = None
     for parameters in parameters:
         print("Parameters: " + str(parameters))
-        model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint = parameters['weight_constraint'])
-        early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
-        
-        history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping]) #verbose=0
-        lowest_val_loss = min(history.history['val_loss'])
-        max_val_f1_score = max(history.history['val_f1_score'])
-        best_epoch = np.argmax(history.history['val_f1_score']) + 1
-        pred = model.predict(X_test)
-        pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
-        print(f'Test accuracy: {accuracy_score(Y_test,pred)}. Lowest val loss: {lowest_val_loss}. Max val F1-score: {max_val_f1_score}.')
-        F1_score = f1_score(Y_test,pred)
-        accuracy = accuracy_score(Y_test,pred)
-        metrics = {'test_accuracy' : accuracy, 'test_F1-score' : F1_score, 'lowest_val_loss' : lowest_val_loss, 'max_val_f1_score' : max_val_f1_score, 'best_epoch': best_epoch, 'history' : history}
-        save_result_to_csv(parameters, metrics, train_results_file)
-        if max_val_f1_score > best_metrics['max_val_f1_score']:
-            best_model = model
+        cv_history = []
+        fold_best_max_val_f1_score = 0
+        fold_best_model = None
+        fold_nr = 0
+        for train, test in kfold.split(X[0], Y):
+            X_train = tuple(x[train] for x in X)
+            X_val = tuple(x[test] for x in X)
+            Y_train, Y_val = Y[train], Y[test]
+
+            class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+            class_weights_dict = dict(enumerate(class_weights))
+
+            model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint = parameters['weight_constraint'])
+            early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
+            
+            history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping]) #verbose=0
+            max_val_f1_score = max(history.history['val_f1_score'])
+            print(f'Max val F1-score: {max_val_f1_score} (fold nr {fold_nr})')
+            if max_val_f1_score > fold_best_max_val_f1_score:
+                fold_best_model = model
+                fold_best_max_val_f1_score = max_val_f1_score
+            cv_history.append(history)
+            fold_nr += 1
+        max_val_f1_score = [max(history.history['val_f1_score']) for history in cv_history]
+        mean_max_val_f1_score = np.mean(max_val_f1_score)
+        best_fold_index = np.argmax(max_val_f1_score)
+        best_epoch = np.argmax(cv_history[best_fold_index].history['val_f1_score']) + 1
+        metrics = {'max_val_f1_score' : max(max_val_f1_score), 'mean_max_val_f1_score' : mean_max_val_f1_score, 'best_epoch': best_epoch, 'history' : cv_history[best_fold_index]}
+        if mean_max_val_f1_score > best_mean_max_val_f1_score:
+            best_mean_max_val_f1_score = mean_max_val_f1_score
             best_parameters = parameters
             best_metrics = metrics
-            best_model.save(model_output_path)
+            fold_best_model.save(model_output_path)
+        print(f'Mean-max val F1-score: {mean_max_val_f1_score}')
+        save_result_to_csv(parameters, metrics, train_results_file)
 
     print("Best parameters: " + str(best_parameters))
     print("Best metrics: " + str(best_metrics))
-    return (best_model, best_metrics['history'])
 
 def parse_args(args):
     parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -319,12 +203,13 @@ def parse_args(args):
     parser.add_argument('-o', '--output', help="Path where the model file will be saved", default="best-model.keras")
     parser.add_argument('-hp', '--hyperparameters', help="Path to the hyperparameter config file", default=os.path.join(os.path.dirname(__file__), 'default-hyperparameters.yaml'))
     parser.add_argument('-tr', '--train_results', help="Path to a file training results in it. Used to resume training if it is stopped", default='train-results.csv')
+    parser.add_argument('-cvf', '--cross_validation_folds', help="Number of folds to use for cross-validation", default=2)
 
     return parser.parse_args(args)
 
 def main():
     args = parse_args(sys.argv[1:])
-    train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results)
+    train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results, args.cross_validation_folds)
     
     
 if __name__ == '__main__':

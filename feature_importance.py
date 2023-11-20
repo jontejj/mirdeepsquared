@@ -1,4 +1,4 @@
-from mirdeepsquared.train import list_of_pickle_files_in, prepare_data, split_data, read_dataframes, to_xy_with_location
+from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, split_data, read_dataframes, to_xy_with_location
 from keras.saving import load_model
 from sklearn.metrics import f1_score
 
@@ -13,15 +13,14 @@ if __name__ == '__main__':
     used_features= ['mature_read_count', 'star_read_count', 'significant_randfold', 'consensus_sequence_as_sentence',
        'mature_vs_star_read_ratio', 'structure_as_1D_array', 'read_density_map_percentage_change', 'location_of_mature_star_and_hairpin']
 
+    holdout = "resources/dataset/split/split.holdout.pkl"
+    
     model = load_model("best-not-seen-test-model-6.keras")
-    df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
-    train, val, test = split_data(prepare_data(df))
-    X_train, Y_train, _ = to_xy_with_location(train)
-    X_val, Y_val, _ = to_xy_with_location(val)
-    X_test, Y_test, _ = to_xy_with_location(test)
-    pred = model.predict(X_val)
+    df = read_dataframes(holdout)
+    X_test, Y_test, _ = to_xy_with_location(prepare_data(df))
+    pred = model.predict(X_test)
     pred = (pred>=0.50)
-    original_F1 = f1_score(Y_val,pred)
+    original_F1 = f1_score(X_test,pred)
 
     print("Original F1-score: " + str(original_F1))
 
@@ -30,14 +29,13 @@ if __name__ == '__main__':
     for feature in used_features:
         F1_with_feature_shuffled = []
         for i in range(0,3):
-            df = read_dataframes(list_of_pickle_files_in("resources/dataset"))
+            df = read_dataframes(holdout)
             df = prepare_data(df)
             random.shuffle(df[feature].values)
-            _, val, _ = split_data(df)
-            X_val, Y_val, _ = to_xy_with_location(val)
-            pred = model.predict(X_val)
+            X, Y, _ = to_xy_with_location(df)
+            pred = model.predict(X)
             pred = (pred>=0.50)
-            F1_with_feature_shuffled.append(f1_score(Y_val,pred))
+            F1_with_feature_shuffled.append(f1_score(Y,pred))
 
         print(f'Average F1-score with {feature} shuffled: ' + str(mean(F1_with_feature_shuffled)))
         shuffled_feature_f1[feature] = mean(F1_with_feature_shuffled)

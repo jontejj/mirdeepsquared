@@ -11,7 +11,7 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
-from mirdeepsquared.train import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
+from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
 from keras.saving import load_model
 
 from keras.models import Sequential
@@ -22,6 +22,7 @@ def train_simple_structure(df):
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
     
+    input_precursor = Input(shape=(111,5), dtype='float32', name='precursor')
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.0001
     l2_strength = 0.001 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
@@ -29,8 +30,8 @@ def train_simple_structure(df):
     embedding_layer = Embedding(input_dim=17, output_dim=128, input_length=111, mask_zero=True)(input)
     bidirectional_lstm = Bidirectional(LSTM(128))(embedding_layer)
     #dense_after_lstm = Dense(64, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(bidirectional_lstm)
-    #reshaped_lstm = Reshape((1, 64), input_shape=(64,))(dense_after_lstm)
-    #conv1d_k3 = Conv1D(filters=64, kernel_size=3, activation='relu')(embedding_layer)
+    reshaped_lstm = Reshape((4, 64), input_shape=(256,))(bidirectional_lstm)
+    precursor_conv1d_k3 = Conv1D(filters=64, kernel_size=3, activation='relu')(input_precursor) #64 filters -> 0.872, 128 -> 0.848
     #avg_pooling_k3 = AveragePooling1D(pool_size=2)(conv1d_k3)
     #conv1d_k5 = Conv1D(filters=64, kernel_size=5, activation='relu')(embedding_layer)
     #avg_pooling_k5 = AveragePooling1D(pool_size=4)(conv1d_k5)
@@ -39,10 +40,13 @@ def train_simple_structure(df):
 
     #conv2d = Conv2D(filters=256, kernel_size=3, activation='relu')(reshaped)
     #global_average = GlobalAveragePooling2D()(conv2d)
-    dense = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer=l2(l2_strength))(bidirectional_lstm)
-    output_layer = Dense(1, activation='sigmoid', kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength), kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense)
 
-    model = Model(inputs=[input], outputs=output_layer)
+    concatenated = Concatenate(axis=1)([reshaped_lstm, precursor_conv1d_k3])
+    dense = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer=l2(l2_strength))(concatenated)
+    global_average = GlobalAveragePooling1D()(dense)
+    output_layer = Dense(1, activation='sigmoid', kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength), kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(global_average)
+
+    model = Model(inputs=[input, input_precursor], outputs=output_layer)
 
     #model = Sequential()
     #Old
@@ -72,5 +76,5 @@ def train_simple_structure(df):
     #tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     #Resume and improve accuracy
     #model = load_model("train-simple-model.keras")
-    history = model.fit(X_train[3], Y_train, epochs=200, batch_size=16, validation_data=(X_val[3], Y_val), callbacks=[early_stopping])
+    history = model.fit([X_train[3], X_train[5]], Y_train, epochs=200, batch_size=16, validation_data=([X_val[3], X_val[5]], Y_val), callbacks=[early_stopping])
     return (model, history)
