@@ -44,10 +44,10 @@ def process_mrd_file(mrd_filepath):
                     read_density_map[i] += repeated_count
                 i+=1
         elif x == "\n" and location_name not in input_features:
-            input_features[location_name] = { "pri_seq" : pri_seq, 
-                                                    "pri_struct" : pri_struct, 
+            input_features[location_name] = { "pri_seq" : pri_seq,
+                                                    "pri_struct" : pri_struct,
                                                     "exp" : exp,
-                                                    "mature_read_count": mature_read_count, 
+                                                    "mature_read_count": mature_read_count,
                                                     "star_read_count":star_read_count,
                                                     "read_density_map":read_density_map}
             read_density_map = np.zeros(112, dtype=np.int32)
@@ -146,7 +146,7 @@ def label_false_positive(df, false_positives, labels, true_positives):
         with open(labels) as file:
             false_positive_list = set(line.rstrip() for line in file)
 
-    df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)    
+    df['false_positive'] = df.apply(lambda x: x['location'] in false_positive_list, axis=1)
 
     #print(df[df['location'].str.contains('chrII:11534525-11540624_19')])
     only_relevant_data = df
@@ -198,10 +198,9 @@ def extract_features_main(args):
 def main():
     args = parse_args(sys.argv[1:])
     df = extract_features_main(args)
-    
+
     pickle_output_file = args.pickle_output_file
     df.to_pickle(pickle_output_file)
 
 if __name__ == '__main__':
     main()
-    

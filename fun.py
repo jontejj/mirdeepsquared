@@ -5,7 +5,7 @@
 import pandas as pd
 import _thread
 
-    
+
 if __name__ == '__main__':
     #df1 = pd.read_pickle("not_false_positives_small.pkl")
     #df2 = pd.read_pickle("false_positives_small.pkl")
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     #mm_struct = "(((((((((((.((.(.(((((("
     #mm_offset = 60
     #build_matrix(pri_struct, mm_struct, mm_offset)
-    
+
 
     #input = "'seq_378026_x1                  ...............................ugcugguuucuuccacagugg..........................................................\t0\n'"
     #m = re.search(r"[A-Za-z]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", input)

@@ -9,7 +9,7 @@ def parse_args(args):
 
     parser.add_argument('result_csv') # positional argument
     parser.add_argument('output_mrd') # positional argument
-    parser.add_argument('-m', '--model', help="The trained .keras model file to use for the predictions", 
+    parser.add_argument('-m', '--model', help="The trained .keras model file to use for the predictions",
         default=os.path.join(os.path.dirname(__file__), 'train-simple-model.keras'))
     #TODO: add batch-size as argument or automatically calculate it?
     return parser.parse_args(args)

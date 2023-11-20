@@ -17,7 +17,7 @@ from keras.regularizers import l2
 #percentage_change test accuracy was 1.0
 def train_density_map(df, epochs=200):
     train, val, _ = split_data(prepare_data(df))
-    
+
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
     density_maps=X_train[2]

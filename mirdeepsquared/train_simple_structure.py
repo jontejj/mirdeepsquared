@@ -14,7 +14,7 @@ def train_simple_structure(df):
     train, val, _ = split_data(prepare_data(df))
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
-    
+
     input_precursor = Input(shape=(111,5), dtype='float32', name='precursor')
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.0001
@@ -64,7 +64,7 @@ def train_simple_structure(df):
     model.compile(optimizer=Adam(learning_rate=0.0003), loss='binary_crossentropy', metrics=['accuracy'])
     model.summary()
     early_stopping = EarlyStopping(monitor='val_accuracy', patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
-    
+
     #log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     #tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
     #Resume and improve accuracy

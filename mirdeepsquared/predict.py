@@ -12,7 +12,7 @@ def predict_main(args):
     novel_slice = df.loc[df['predicted_as_novel'] == True]
     if len(novel_slice) == 0:
         raise ValueError("No novel predictions in input files. Nothing to filter")
-    
+
     #X = np.asarray(novel_slice['read_density_map_percentage_change'].values.tolist())
 
     return true_positives(args.model, novel_slice)

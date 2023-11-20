@@ -6,7 +6,7 @@ from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files
 import numpy as np
 
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional 
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -35,7 +35,7 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size = 
     consensus_maxpooling_layer = GlobalMaxPooling1D()(conv1d_layer)
 
     #batch_norm_layer = BatchNormalization(trainable=True)(maxpooling_layer) #TODO: remember to set trainable=False when inferring
-    
+
     #Input 2 - Location of mature, star and hairpin sequences
     input_location_of_mature_star_and_hairpin = Input(shape=(111,4), dtype='float32', name='location_of_mature_star_and_hairpin')
 
@@ -107,7 +107,7 @@ def generate_hyperparameter_combinations(hyperparameter_file, train_results_file
     #Resume grid search if there already are results
     if os.path.exists(train_results_file):
         already_run_parameters = list()
-        
+
         with open(train_results_file, newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
             next(reader, None) #Skip header row
@@ -165,7 +165,7 @@ def train_main(dataset_path, model_output_path, hyperparameter_file, train_resul
 
             model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], batch_size = parameters['batch_size'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint = parameters['weight_constraint'])
             early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
-            
+
             history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping]) #verbose=0
             max_val_f1_score = max(history.history['val_f1_score'])
             print(f'Max val F1-score: {max_val_f1_score} (fold nr {fold_nr})')
@@ -204,7 +204,7 @@ def parse_args(args):
 def main():
     args = parse_args(sys.argv[1:])
     train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results, args.cross_validation_folds)
-    
-    
+
+
 if __name__ == '__main__':
     main()
