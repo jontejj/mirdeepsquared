@@ -1,4 +1,4 @@
-from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, split_data, read_dataframes, to_xy_with_location
+from mirdeepsquared.common import prepare_data, read_dataframes, to_xy_with_location
 from keras.saving import load_model
 from sklearn.metrics import f1_score
 
@@ -14,7 +14,7 @@ if __name__ == '__main__':
        'mature_vs_star_read_ratio', 'structure_as_1D_array', 'read_density_map_percentage_change', 'location_of_mature_star_and_hairpin']
 
     holdout = "resources/dataset/split/split.holdout.pkl"
-    
+
     model = load_model("best-not-seen-test-model-6.keras")
     df = read_dataframes(holdout)
     X_test, Y_test, _ = to_xy_with_location(prepare_data(df))

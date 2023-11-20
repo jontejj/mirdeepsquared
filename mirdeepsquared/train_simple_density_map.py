@@ -1,21 +1,14 @@
-from tensorflow import keras
-from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape
+from keras.layers import Input, Flatten, Dense, Concatenate, Normalization, Reshape
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.metrics import F1Score
-from .common import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
-from keras.saving import load_model
+from .common import prepare_data, split_data, to_xy_with_location
 
 import numpy as np
 
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
 from sklearn.utils.class_weight import compute_class_weight
-from imblearn.over_sampling import RandomOverSampler
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
 
@@ -34,9 +27,6 @@ def train_density_map(df, epochs=200):
     #Max accuracy on val: 0.8805, (l1=0.00001, l2_strength=0.001) -> 0.8925
     l1_strength = 0.01
     l2_strength = 0.01 #0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
-
-    #ros = RandomOverSampler(random_state=42)
-    #X_train_resampled, Y_train_resampled = ros.fit_resample([density_maps, location_of_mature_star_and_hairpin], Y_train)
 
     input_location_of_mature_star_and_hairpin = Input(shape=(111,4), dtype='float32', name='location_of_mature_star_and_hairpin')
     mean_values = np.mean(density_maps, axis=0)
@@ -57,11 +47,9 @@ def train_density_map(df, epochs=200):
     model.compile(optimizer=Adam(learning_rate=0.003), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
     model.summary()
     early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
-    #Y_train_resampled
     class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
     class_weights_dict = dict(enumerate(class_weights))
 
-    #X_train_resampled
     history = model.fit([location_of_mature_star_and_hairpin, density_maps], Y_train, class_weight=class_weights_dict, epochs=epochs, batch_size=16, validation_data=(X_val_two_features, Y_val), callbacks=[early_stopping]) #verbose=0
 
     return (model, history)

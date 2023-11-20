@@ -1,11 +1,8 @@
-import os
 #import tensorflow
 #import screed # a library for reading in FASTA/FASTQ
 #from tensorflow import keras
 #import numpy as np
 import pandas as pd
-import re
-import numpy as np
 import _thread
 
     

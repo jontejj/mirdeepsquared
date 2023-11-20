@@ -1,6 +1,4 @@
-import os
 import sys
-import pprint
 import screed # a library for reading in FASTA/FASTQ
 import pandas as pd
 import re
@@ -84,9 +82,6 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
             mm_struct = data_from_mrd[location_name]["pri_struct"][mm_offset: mm_offset + len(data_from_mrd[location_name]["consensus_sequence"])]
             data_from_mrd[location_name]["mm_struct"] = mm_struct
             data_from_mrd[location_name]["mm_offset"] = mm_offset
-    #pp = pprint.PrettyPrinter(width=100, compact=True)
-    #pp.pprint(input_features)
-    #print("Unfiltered size: " + str(len(input_features)))
     result_file.close()
 
 def convert_to_dataframe(input_features):

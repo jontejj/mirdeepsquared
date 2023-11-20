@@ -1,4 +1,3 @@
-from .context import mirdeepsquared
 from mirdeepsquared.extract_features import parse_args, extract_features_main
 
 class TestExtractFeatures:

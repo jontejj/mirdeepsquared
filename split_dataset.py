@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 
 from mirdeepsquared.common import split_into_different_files

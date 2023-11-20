@@ -1,4 +1,3 @@
-from .context import mirdeepsquared
 #Make training reproducable
 from tensorflow import keras
 keras.utils.set_random_seed(42)

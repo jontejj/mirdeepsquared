@@ -4,12 +4,9 @@ import sys
 from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, to_xy_with_location
 
 import numpy as np
-import pandas as pd
 
-from tensorflow import keras
-from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional 
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional 
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -17,9 +14,6 @@ from keras.optimizers.schedules import ExponentialDecay
 from keras.metrics import F1Score
 from keras.callbacks import EarlyStopping
 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import StratifiedKFold
 

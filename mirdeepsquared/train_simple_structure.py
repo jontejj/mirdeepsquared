@@ -1,21 +1,14 @@
-import datetime
 
-from keras.constraints import MaxNorm
-from keras.src.optimizers.schedules.learning_rate_schedule import ExponentialDecay
-from tensorflow import keras
-from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization, Reshape, AveragePooling1D, MaxPooling1D, MaxPooling2D, GlobalAveragePooling2D
+from keras.layers import Input, Embedding, Dense, GlobalAveragePooling1D, Conv1D, Concatenate, Reshape
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from keras.regularizers import l1_l2
 from keras.regularizers import l2
-from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
-from keras.saving import load_model
+from mirdeepsquared.common import prepare_data, split_data, to_xy_with_location
 
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, Embedding, Bidirectional, Dropout
+from keras.layers import LSTM, Dense, Embedding, Bidirectional
 
 def train_simple_structure(df):
     train, val, _ = split_data(prepare_data(df))

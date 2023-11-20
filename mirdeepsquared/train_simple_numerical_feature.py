@@ -1,18 +1,9 @@
-from tensorflow import keras
-from keras.preprocessing.sequence import pad_sequences
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, GlobalAveragePooling1D, Conv1D, Conv2D, GlobalMaxPooling1D, BatchNormalization, Concatenate, Normalization
+from keras.layers import Input, Dense, Normalization
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prepare_data, split_data, to_xy_with_location
-from keras.saving import load_model
-
-import numpy as np
-
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
+from mirdeepsquared.common import prepare_data, split_data, to_xy_with_location
 
 def train_simple_numerical_features(df):
     train, val, _ = split_data(prepare_data(df))
