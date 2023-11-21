@@ -60,7 +60,8 @@ def read_dataframes(paths):
     dfs = []
     for path in paths:
         df = pd.read_pickle(path)
-        df['source_pickle'] = os.path.basename(path)
+        if 'source_pickle' not in df.columns:
+            df['source_pickle'] = os.path.basename(path)
         dfs.append(df)
 
     return pd.concat(dfs, axis=0)

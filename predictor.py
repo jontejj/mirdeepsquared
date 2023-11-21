@@ -3,10 +3,11 @@ from keras.saving import load_model
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
-from mirdeepsquared.common import read_dataframes, prepare_data, to_xy_with_location
+from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prepare_data, to_xy_with_location
 
 if __name__ == '__main__':
-    df = read_dataframes("resources/dataset/split/split.holdout.pkl")
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset/other_species/true_positives"))
+    #df = read_dataframes(["resources/dataset/split/holdout/holdout.pkl"])
 
     print("False positives:" + str(len(df[(df['false_positive']==True)])))
     print("True positives:" + str(len(df[(df['false_positive']==False)])))
