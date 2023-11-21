@@ -17,6 +17,10 @@ from keras.callbacks import EarlyStopping
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import StratifiedKFold
 
+import multiprocessing
+from multiprocessing import Manager
+from concurrent.futures import ProcessPoolExecutor
+
 import csv
 import yaml
 
@@ -139,60 +143,80 @@ def save_result_to_csv(parameters, metrics, train_results_file):
         writer.writerow([parameters['batch_size'], parameters['epochs'], parameters['model_size'], parameters['learning_rate'], parameters['regularize'], parameters['dropout_rate'], parameters['weight_constraint'], history['accuracy'][-1], history['loss'][-1], history['val_accuracy'][-1], history['val_loss'][-1], metrics['max_val_f1_score'], metrics['best_epoch'], metrics['mean_max_val_f1_score']])
 
 
-def train_main(dataset_path, model_output_path, hyperparameter_file, train_results_file, cross_validation_folds=2):
+def train_main(dataset_path, model_output_path, hyperparameter_file, train_results_file, cross_validation_folds=2, parallelism=1):
     df = read_dataframes(list_of_pickle_files_in(dataset_path))
-
     print("False positives:" + str(len(df[(df['false_positive'] == True)])))
     print("True positives:" + str(len(df[(df['false_positive'] == False)])))
 
-    kfold = StratifiedKFold(n_splits=cross_validation_folds, shuffle=True, random_state=42)
-
-    X, Y, _ = to_xy_with_location(prepare_data(df))
-
     parameters, best_mean_max_val_f1_score = generate_hyperparameter_combinations(hyperparameter_file, train_results_file)
 
-    best_parameters = None
-    best_metrics = None
-    for parameters in parameters:
-        print("Parameters: " + str(parameters))
-        cv_history = []
-        fold_best_max_val_f1_score = 0
-        fold_best_model = None
-        fold_nr = 0
-        for train, test in kfold.split(X[0], Y):
-            X_train = tuple(x[train] for x in X)
-            X_val = tuple(x[test] for x in X)
-            Y_train, Y_val = Y[train], Y[test]
+    with Manager() as manager:
+        best_parameters = manager.Queue()
+        shared_best_mean_max_val_f1_score = manager.Value('d', best_mean_max_val_f1_score)
+        shared_lock = manager.Lock()
+        with ProcessPoolExecutor(max_workers=parallelism) as executor:
+            print(f'Putting train_parameter tasks on process pool with {parallelism} concurrent processes')
+            futures = []
+            for parameter in parameters:
+                futures.append(executor.submit(train_parameter, parameter, cross_validation_folds, train_results_file, model_output_path, dataset_path, shared_best_mean_max_val_f1_score, shared_lock, best_parameters))
+            print("All train_parameter tasks have been added")
 
-            class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
-            class_weights_dict = dict(enumerate(class_weights))
+            print("Getting results to ensure any exceptions are propagated")
+            [future.result() for future in futures]
 
-            model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameters['model_size'], initial_learning_rate=parameters['learning_rate'], regularize=parameters['regularize'], dropout_rate=parameters['dropout_rate'], weight_constraint=parameters['weight_constraint'])
-            early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
+        best_parameters = consume_queue_and_return_last_item(best_parameters)
+        print("Best parameters: " + str(best_parameters))
 
-            history = model.fit(X_train, Y_train, epochs=parameters['epochs'], batch_size=parameters['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping])  # verbose=0
-            max_val_f1_score = max(history.history['val_f1_score'])
-            print(f'Max val F1-score: {max_val_f1_score} (fold nr {fold_nr})')
-            if max_val_f1_score > fold_best_max_val_f1_score:
-                fold_best_model = model
-                fold_best_max_val_f1_score = max_val_f1_score
-            cv_history.append(history)
-            fold_nr += 1
-        max_val_f1_score = [max(history.history['val_f1_score']) for history in cv_history]
-        mean_max_val_f1_score = np.mean(max_val_f1_score)
-        best_fold_index = np.argmax(max_val_f1_score)
-        best_epoch = np.argmax(cv_history[best_fold_index].history['val_f1_score']) + 1
-        metrics = {'max_val_f1_score': max(max_val_f1_score), 'mean_max_val_f1_score': mean_max_val_f1_score, 'best_epoch': best_epoch, 'history': cv_history[best_fold_index]}
-        if mean_max_val_f1_score > best_mean_max_val_f1_score:
-            best_mean_max_val_f1_score = mean_max_val_f1_score
-            best_parameters = parameters
-            best_metrics = metrics
+
+def consume_queue_and_return_last_item(q):
+    # Retrieve the last entry from the queue
+    last_entry = None
+    while not q.empty():
+        last_entry = q.get()
+    return last_entry
+
+
+def train_parameter(parameter, cross_validation_folds, train_results_file, model_output_path, dataset_path, shared_best_mean_max_val_f1_score, shared_lock, best_parameters):
+    print("Parameters: " + str(parameter))
+    df = read_dataframes(list_of_pickle_files_in(dataset_path))
+    X, Y, _ = to_xy_with_location(prepare_data(df))
+
+    kfold = StratifiedKFold(n_splits=cross_validation_folds, shuffle=True, random_state=42)
+    cv_history = []
+    fold_best_max_val_f1_score = 0
+    fold_best_model = None
+    fold_nr = 0
+    for train, test in kfold.split(X[0], Y):
+        X_train = tuple(x[train] for x in X)
+        X_val = tuple(x[test] for x in X)
+        Y_train, Y_val = Y[train], Y[test]
+
+        class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
+        class_weights_dict = dict(enumerate(class_weights))
+
+        model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameter['model_size'], initial_learning_rate=parameter['learning_rate'], regularize=parameter['regularize'], dropout_rate=parameter['dropout_rate'], weight_constraint=parameter['weight_constraint'])
+        early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
+
+        history = model.fit(X_train, Y_train, epochs=parameter['epochs'], batch_size=parameter['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping])  # verbose=0
+        max_val_f1_score = max(history.history['val_f1_score'])
+        print(f'Max val F1-score: {max_val_f1_score} (fold nr {fold_nr})')
+        if max_val_f1_score > fold_best_max_val_f1_score:
+            fold_best_model = model
+            fold_best_max_val_f1_score = max_val_f1_score
+        cv_history.append(history)
+        fold_nr += 1
+    max_val_f1_score = [max(history.history['val_f1_score']) for history in cv_history]
+    mean_max_val_f1_score = np.mean(max_val_f1_score)
+    best_fold_index = np.argmax(max_val_f1_score)
+    best_epoch = np.argmax(cv_history[best_fold_index].history['val_f1_score']) + 1
+    metrics = {'max_val_f1_score': max(max_val_f1_score), 'mean_max_val_f1_score': mean_max_val_f1_score, 'best_epoch': best_epoch, 'history': cv_history[best_fold_index]}
+    print(f'Mean-max val F1-score: {mean_max_val_f1_score}')
+    with shared_lock:
+        save_result_to_csv(parameter, metrics, train_results_file)
+        if mean_max_val_f1_score > shared_best_mean_max_val_f1_score.value:
+            shared_best_mean_max_val_f1_score.value = mean_max_val_f1_score
+            best_parameters.put(parameter)
             fold_best_model.save(model_output_path)
-        print(f'Mean-max val F1-score: {mean_max_val_f1_score}')
-        save_result_to_csv(parameters, metrics, train_results_file)
-
-    print("Best parameters: " + str(best_parameters))
-    print("Best metrics: " + str(best_metrics))
 
 
 def parse_args(args):
@@ -203,13 +227,14 @@ def parse_args(args):
     parser.add_argument('-hp', '--hyperparameters', help="Path to the hyperparameter config file", default=os.path.join(os.path.dirname(__file__), 'default-hyperparameters.yaml'))
     parser.add_argument('-tr', '--train_results', help="Path to a file training results in it. Used to resume training if it is stopped", default='train-results.csv')
     parser.add_argument('-cvf', '--cross_validation_folds', help="Number of folds to use for cross-validation", default=2)
+    parser.add_argument('-p', '--parallelism', help="Number of processes/threads to run in parallel", default=multiprocessing.cpu_count())
 
     return parser.parse_args(args)
 
 
 def main():
     args = parse_args(sys.argv[1:])
-    train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results, args.cross_validation_folds)
+    train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
 
 
 if __name__ == '__main__':

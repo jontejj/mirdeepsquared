@@ -20,9 +20,9 @@ def main():
     args = parse_args(sys.argv[1:])
     # Avoid booting tensorflow until the correct params have been given
     from mirdeepsquared.predict import predict_main
-    false_positives = predict_main(args)
-    for false_positive in false_positives:
-        print(false_positive)
+    true_positives = predict_main(args)
+    for true_positive in true_positives:
+        print(true_positive)
 
 
 if __name__ == '__main__':

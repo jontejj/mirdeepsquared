@@ -8,6 +8,7 @@ from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, read_da
 from mirdeepsquared.train import train_main
 from mirdeepsquared.predict import true_positives, predict_main
 from mirdeepsquared.predict_cmd import parse_args
+import multiprocessing
 
 
 class TestPredict:
@@ -17,7 +18,7 @@ class TestPredict:
         train_results_file = str(tmp_path / "train_results_tmp.csv")
         split_main_path = str(tmp_path / "split-data")
         split_into_different_files("resources/dataset", split_main_path)
-        train_main(split_main_path + "/train", model_path, "tests/two-hyperparameters.yaml", train_results_file)
+        train_main(split_main_path + "/train", model_path, "tests/two-hyperparameters.yaml", train_results_file, parallelism=min([multiprocessing.cpu_count() - 1, 1]))
         return model_path
 
     def test_false_positives(self, tmp_path):
