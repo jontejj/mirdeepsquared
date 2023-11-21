@@ -1,5 +1,6 @@
 from mirdeepsquared.extract_features import parse_args, extract_features_main
 
+
 class TestExtractFeatures:
 
     def test_false_positives(self):

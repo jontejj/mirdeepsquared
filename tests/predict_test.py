@@ -1,4 +1,4 @@
-#Make training reproducable
+# Make training reproducable, and test results stable
 from tensorflow import keras
 keras.utils.set_random_seed(42)
 import tensorflow as tf
@@ -8,6 +8,7 @@ from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, read_da
 from mirdeepsquared.train import train_main
 from mirdeepsquared.predict import true_positives, predict_main
 from mirdeepsquared.predict_cmd import parse_args
+
 
 class TestPredict:
 
@@ -21,13 +22,13 @@ class TestPredict:
 
     def test_false_positives(self, tmp_path):
         model_path = self.train(tmp_path)
-        args = parse_args(["resources/false_positives/result_08_11_2023_t_19_35_00.csv", "resources/false_positives/08_11_2023_t_19_35_00_output.mrd", "-m",  model_path])
+        args = parse_args(["resources/false_positives/result_08_11_2023_t_19_35_00.csv", "resources/false_positives/08_11_2023_t_19_35_00_output.mrd", "-m", model_path])
         true_positives_in_seen_data = predict_main(args)
-        #TODO: improve!
+        # TODO: improve!
         assert len(true_positives_in_seen_data) < 35
 
         holdout_df = prepare_data(read_dataframes(list_of_pickle_files_in(str(tmp_path / "split-data/holdout"))))
-        expected_true_positives = set(holdout_df[(holdout_df['false_positive']==False)]['location'])
+        expected_true_positives = set(holdout_df[(holdout_df['false_positive'] == False)]['location'])
 
         predicted_true_positives_holdout = set(true_positives(model_path, holdout_df))
         difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)

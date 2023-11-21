@@ -1,22 +1,22 @@
-from tensorflow import keras
 from keras.saving import load_model
 
 import numpy as np
 
+
 def get_model_memory_usage(batch_size, model):
     try:
         from keras import backend as K
-    except:
+    except Exception:
         from tensorflow.keras import backend as K
 
     shapes_mem_count = 0
     internal_model_mem_count = 0
-    for l in model.layers:
-        layer_type = l.__class__.__name__
+    for layer in model.layers:
+        layer_type = layer.__class__.__name__
         if layer_type == 'Model':
-            internal_model_mem_count += get_model_memory_usage(batch_size, l)
+            internal_model_mem_count += get_model_memory_usage(batch_size, layer)
         single_layer_mem = 1
-        out_shape = l.output_shape
+        out_shape = layer.output_shape
         if type(out_shape) is list:
             out_shape = out_shape[0]
         for s in out_shape:
@@ -40,5 +40,5 @@ def get_model_memory_usage(batch_size, model):
 
 
 if __name__ == '__main__':
-    model = load_model("train-simple-model.keras")
+    model = load_model("mirdeepsquared/train-simple-model.keras")
     print("Gigabytes required for model: " + str(get_model_memory_usage(2048, model)))
