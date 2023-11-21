@@ -1,4 +1,4 @@
-# Mirdeepsquared 
+# Mirdeepsquared
 Mirdeepsquared uses a deep learning model that predicts if novel miRNA sequences in the output of miRDeep2 are false positives or not. This greatly reduces the amount of manual work that is currently needed to filter out the false positives.
 
 ## Usage (with pip install)
@@ -20,6 +20,7 @@ source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python3 -m pip install -e .
 python split_dataset.py resources/dataset/ resources/dataset/split
+cp resources/dataset/other_species/true_positives/mouse.mature.pkl resources/dataset/split/train/
 python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
 python mirdeepsquared/predict_cmd.py -m hyper-parameter-tuned-model.keras path/to/your_result.csv path/to/your/output.mrd
 ```
@@ -33,6 +34,7 @@ virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python split_dataset.py resources/dataset/ resources/dataset/split
+cp resources/dataset/other_species/true_positives/mouse.mature.pkl resources/dataset/split/train/
 python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
 ```
 
