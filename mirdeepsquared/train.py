@@ -67,18 +67,25 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
     normalizer_layer.adapt(numeric_features)
     numeric_features_dense = Dense(model_size * 4, activation='relu')(normalizer_layer(input_layer_numeric_features))
 
-    concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense])
+    # Input 6 - precursor sequence
+    input_precursor = Input(shape=(111, 5), dtype='float32', name='precursor')
+    precursor_conv1d_k3 = Conv1D(filters=64, kernel_size=3, activation='relu')(input_precursor)  # 64 filters -> 0.872, 128 -> 0.848
+    # avg_pooling_k3 = AveragePooling1D(pool_size=2)(conv1d_k3)
+    precursor_conv1d_k5 = Conv1D(filters=64, kernel_size=5, activation='relu')(input_precursor)
+    precursor_concatenated = Concatenate(axis=1)([precursor_conv1d_k5, precursor_conv1d_k3])
+    precursor_maxpooling_layer = GlobalMaxPooling1D()(precursor_concatenated)
+
+    concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense, precursor_maxpooling_layer])
+    dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(concatenated)
 
     if regularize:
-        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(concatenated)
-        dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(dense_layer)
-        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
+        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(dropout_layer)
+        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
     else:
-        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated)
-        dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(dense_layer)
-        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
+        dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
+        output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
 
-    model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features], outputs=output_layer)
+    model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features, input_precursor], outputs=output_layer)
 
     lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
     model.compile(optimizer=Adam(learning_rate=lr_schedule), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])

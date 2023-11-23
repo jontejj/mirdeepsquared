@@ -4,6 +4,7 @@ import pandas as pd
 import screed  # a library for reading in FASTA/FASTQ
 import glob
 import numpy as np
+from pathlib import Path
 
 KMER_SIZE = 6
 NUCLEOTIDE_NR = 5  # U C A G D (D for Dummy)
@@ -56,6 +57,12 @@ def build_structure_1D(pri_struct, mm_struct, mm_offset, exp):
 
     merged_structure_information = [char_mappings[x][pri_struct_truncated[ind]] for ind, x in enumerate(exp_truncated)]
     return merged_structure_information
+
+
+def save_dataframe_to_pickle(df, pickle_output_file):
+    pickle_output_file = Path(pickle_output_file)
+    pickle_output_file.parent.mkdir(parents=True, exist_ok=True)
+    df.to_pickle(pickle_output_file)
 
 
 def list_of_pickle_files_in(path):
@@ -120,28 +127,25 @@ def prepare_data(df):
     return df
 
 
-def split_data_holdout(df):
-    train = df.sample(frac=0.8, random_state=42)
+def split_data_once(df, fraction=0.8):
+    train = df.sample(frac=fraction, random_state=42)
     holdout = df.drop(train.index)
     return (train, holdout)
 
 
-def split_into_different_files(path_to_pickle_files, pickle_output_path):
-    df = read_dataframes(list_of_pickle_files_in(path_to_pickle_files))
-    train, holdout = split_data_holdout(df)
-    os.makedirs(pickle_output_path)
-    os.mkdir(pickle_output_path + "/train")
-    os.mkdir(pickle_output_path + "/holdout")
-    train.to_pickle(pickle_output_path + "/train/train.pkl")
-    holdout.to_pickle(pickle_output_path + "/holdout/holdout.pkl")
-
-
-def split_data(df):
-    train = df.sample(frac=0.6, random_state=42)
+def split_data_twice(df, first_fraction=0.6, second_fraction=0.5):
+    train = df.sample(frac=first_fraction, random_state=42)
     tmp = df.drop(train.index)
-    val = tmp.sample(frac=0.5, random_state=42)
+    val = tmp.sample(frac=second_fraction, random_state=42)
     test = tmp.drop(val.index)
     return (train, val, test)
+
+
+def split_into_different_files(path_to_pickle_files, pickle_output_path):
+    df = read_dataframes(list_of_pickle_files_in(path_to_pickle_files))
+    train, holdout = split_data_once(df, fraction=0.8)
+    save_dataframe_to_pickle(train, pickle_output_path + "/train/train.pkl")
+    save_dataframe_to_pickle(holdout, pickle_output_path + "/holdout/holdout.pkl")
 
 
 def to_x_with_location(df):
@@ -154,8 +158,7 @@ def to_x_with_location(df):
     structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
     location_of_mature_star_and_hairpin = np.asarray(df['location_of_mature_star_and_hairpin'].values.tolist())
     precursors = np.asarray(df['precursor_encoded'].values.tolist())
-    # TODO: add , precursors
-    return ((consensus_texts, location_of_mature_star_and_hairpin, density_maps, structure_as_1D_array, numeric_features), locations)
+    return ((consensus_texts, location_of_mature_star_and_hairpin, density_maps, structure_as_1D_array, numeric_features, precursors), locations)
 
 
 def to_xy_with_location(df):

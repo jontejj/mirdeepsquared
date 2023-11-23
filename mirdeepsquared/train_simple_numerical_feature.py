@@ -3,11 +3,11 @@ from keras.layers import Input, Dense, Normalization
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from mirdeepsquared.common import prepare_data, split_data, to_xy_with_location
+from mirdeepsquared.common import prepare_data, split_data_once, to_xy_with_location
 
 
 def train_simple_numerical_features(df):
-    train, val, _ = split_data(prepare_data(df))
+    train, val = split_data_once(prepare_data(df))
     X_train, Y_train, _ = to_xy_with_location(train)
     X_val, Y_val, _ = to_xy_with_location(val)
     numeric_features = X_train[4]

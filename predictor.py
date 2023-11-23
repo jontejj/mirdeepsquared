@@ -7,8 +7,7 @@ from mirdeepsquared.common import list_of_pickle_files_in, read_dataframes, prep
 
 if __name__ == '__main__':
     # df = read_dataframes(list_of_pickle_files_in("resources/dataset/other_species/true_positives/zebrafish"))
-    df = read_dataframes(list_of_pickle_files_in("resources/dataset/split/holdout"))
-
+    df = read_dataframes(list_of_pickle_files_in("resources/dataset/split/holdout"))  # easy/split/holdout
     print("False positives:" + str(len(df[(df['false_positive'] == True)])))
     print("True positives:" + str(len(df[(df['false_positive'] == False)])))
 
@@ -16,8 +15,9 @@ if __name__ == '__main__':
     # TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
     model = load_model("mirdeepsquared/train-simple-model.keras")
     # model = load_model("mirdeepsquared/train-simple-model-density-map.keras")
+    # model = load_model("mirdeepsquared/train-simple-model-precursors.keras")
 
-    pred = model.predict(X_test)  # [X_test[1], X_test[2]])  #
+    pred = model.predict(X_test)  # X_test[1], X_test[2], X_test[5])  #
     pred = (pred >= 0.50)  # If probability is equal or higher than 0.50, It's most likely a false positive (True)
     print("Test Confusion matrix:")
     print(confusion_matrix(Y_test, pred))
