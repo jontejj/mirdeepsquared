@@ -14,8 +14,8 @@ def parse_args(args):
 
 
 def main():
-    # args = parse_args(sys.argv[1:])
-    args = parse_args(["resources/dataset/", "resources/dataset/split/"])
+    args = parse_args(sys.argv[1:])
+    # args = parse_args(["resources/dataset/", "resources/dataset/split/"])
     split_into_different_files(args.path_to_pickle_files, args.pickle_output_path, args.fraction)
 
 
