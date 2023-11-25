@@ -6,7 +6,7 @@ from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files
 import numpy as np
 
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional, BatchNormalization
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -78,13 +78,21 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
     concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense, precursor_maxpooling_layer])
     dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(concatenated)
 
+    #TODO: remove regularization on output_layer?
     if regularize:
         dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(dropout_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
     else:
         dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
+    #TODO: batch_norm?
+    #batch_norm = BatchNormalization()(dense_layer)
 
+    # Input 7 - motifs
+    #input_motifs = Input(shape=(1), dtype='float32', name='has_all_motifs')
+    #concatenated_with_motif_input = Concatenate()([batch_norm, input_motifs])
+    #output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated_with_motif_input)
+    #, input_motifs
     model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features, input_precursor], outputs=output_layer)
 
     lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)

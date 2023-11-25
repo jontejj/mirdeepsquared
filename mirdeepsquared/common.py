@@ -5,6 +5,7 @@ import screed  # a library for reading in FASTA/FASTQ
 import glob
 import numpy as np
 from pathlib import Path
+import re
 
 KMER_SIZE = 6
 NUCLEOTIDE_NR = 5  # U C A G D (D for Dummy)
@@ -77,7 +78,9 @@ def read_dataframes(paths):
             df['source_pickle'] = os.path.basename(path)
         dfs.append(df)
 
-    return pd.concat(dfs, axis=0)
+    concatenated = pd.concat(dfs, axis=0)
+    concatenated.reset_index(inplace=True, drop=True)
+    return concatenated
 
 
 def calc_percentage_change(numbers):
@@ -111,6 +114,41 @@ def encode_precursor(precursor):
     return one_hot_encoded
 
 
+def find_motifs(exp, pri_seq):
+    """
+    From https://mirgenedb.org/information:
+    "Processing motifs are often (but not always) present in the primary microRNA transcript including a UG motif 14 nucleotides upstream of the 5p arm,
+    a UGU motif at the 3' end of the 5p arm, and a CNNC motif 17 nucleotides downstream of the 3p arm (22,23).".
+    But according to https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4613790/, the CNNC motif can be positioned 16-18 nt downstream
+    """
+    # exp like: fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff
+    # TODO: how to handle padding/truncation?
+
+    star_offset = exp.find('S')
+    star_end = exp.rfind('S') + 1
+    mature_offset = exp.find('M')
+    mature_end = exp.rfind('M') + 1
+    star_first = star_offset < mature_offset
+    if star_first:
+        ug_motif = pri_seq[star_offset - 14: star_offset - 12]
+        ugu_motif = pri_seq[star_end: star_end + 3]
+        cnnc_motif_range = pri_seq[mature_end + 15: mature_end + 22]
+    else:
+        ug_motif = pri_seq[mature_offset - 14: mature_offset - 12]
+        ugu_motif = pri_seq[mature_end: mature_end + 3]
+        cnnc_motif_range = pri_seq[star_end + 15: star_end + 22]
+    has_ug_motif = ug_motif == 'ug'
+    has_ugu_motif = (ugu_motif == 'ugu' or ugu_motif == 'gug')  # reverse complement of ugu
+    has_cnnc_motif = re.search(r"[ucag]*c[ucag][ucag]c[ucag]*", cnnc_motif_range) is not None
+    # TODO: mismatched GHG (mGHG) where H is either a, c or u?
+    return [int(has_ug_motif), int(has_ugu_motif), int(has_cnnc_motif)]
+
+
+def one_hot_encode(categorical_features, nr_of_categories):
+    one_hot_encoded = np.eye(nr_of_categories)[categorical_features]
+    return one_hot_encoded
+
+
 def prepare_data(df):
     # From https://github.com/dhanush77777/DNA-sequencing-using-NLP/blob/master/DNA%20sequencing.ipynb
     df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
@@ -124,6 +162,10 @@ def prepare_data(df):
     df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
     df['location_of_mature_star_and_hairpin'] = df.apply(lambda x: encode_exp(x['exp']), axis=1)
     df['precursor_encoded'] = df.apply(lambda x: encode_precursor(x['pri_seq']), axis=1)
+    # df[['has_ug_motif', 'has_ugu_motif', 'has_cnnc_motif']] = df.apply(lambda x: pd.Series(find_motifs(x['exp'], x['pri_seq'])), axis=1)
+    # df['motifs_one_hot_encoded'] = df.apply(lambda x: one_hot_encode(find_motifs(x['exp'], x['pri_seq']), 2), axis=1)
+    df['motifs'] = df.apply(lambda x: find_motifs(x['exp'], x['pri_seq']), axis=1)
+    df['has_all_motifs'] = df.apply(lambda x: (x['motifs'] == [1, 1, 1]), axis=1)
     return df
 
 
@@ -141,10 +183,16 @@ def split_data_twice(df, first_fraction=0.6, second_fraction=0.5):
     return (train, val, test)
 
 
-def split_into_different_files(path_to_pickle_files, pickle_output_path):
-    df = read_dataframes(list_of_pickle_files_in(path_to_pickle_files))
-    train, holdout = split_data_once(df, fraction=0.8)
+def split_into_different_files(path_to_pickle_files, pickle_output_path, fraction):
+    list_of_files = list_of_pickle_files_in(path_to_pickle_files)
+    print("Splitting " + str([os.path.basename(path) for path in list_of_files]) + " with fraction " + str(fraction))
+    df = read_dataframes(list_of_files)
+    train, holdout = split_data_once(df, fraction=fraction)
+    print("False positives in train:" + str(len(train[(train['false_positive'] == True)])))
+    print("True positives in train:" + str(len(train[(train['false_positive'] == False)])))
     save_dataframe_to_pickle(train, pickle_output_path + "/train/train.pkl")
+    print("False positives in holdout:" + str(len(holdout[(holdout['false_positive'] == True)])))
+    print("True positives in holdout:" + str(len(holdout[(holdout['false_positive'] == False)])))
     save_dataframe_to_pickle(holdout, pickle_output_path + "/holdout/holdout.pkl")
 
 
@@ -152,12 +200,15 @@ def to_x_with_location(df):
     locations = df['location'].values.tolist()
     consensus_texts = np.asarray(df['consensus_sequence_as_sentence'].values.tolist())
     density_maps = np.asarray(df['read_density_map_percentage_change'].values.tolist())
-    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']  # , 'estimated_probability', 'estimated_probability_uncertainty'
+    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']  # , 'estimated_probability', 'estimated_probability_uncertainty',
     numeric_features = np.asarray(df[numeric_feature_names])
 
     structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
     location_of_mature_star_and_hairpin = np.asarray(df['location_of_mature_star_and_hairpin'].values.tolist())
     precursors = np.asarray(df['precursor_encoded'].values.tolist())
+    # TODO: add motifs
+    # motifs = np.asarray(df['has_all_motifs'].values.tolist())
+    # , motifs
     return ((consensus_texts, location_of_mature_star_and_hairpin, density_maps, structure_as_1D_array, numeric_features, precursors), locations)
 
 

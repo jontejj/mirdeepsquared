@@ -6,6 +6,7 @@ def generate_false_read_density_maps(file, output):
     data = pd.read_pickle(file)
     data['read_density_map'] = data.apply(lambda x: np.zeros(112, dtype=np.int32), axis=1)
     data = data.assign(false_positive=True)
+    data['location'] = data['location'].astype(str) + "_generated"
     data.to_pickle(output)
 
 
