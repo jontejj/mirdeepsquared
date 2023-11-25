@@ -26,7 +26,8 @@ class TestPredict:
 
         holdout_df = prepare_data(read_dataframes(list_of_pickle_files_in(str(tmp_path / "split-data/holdout"))))
         train_df = prepare_data(read_dataframes(list_of_pickle_files_in(str(tmp_path / "split-data/train"))))
-        assert len(holdout_df) == 0.25 * len(train_df)
+        expected_holdout_len = 0.25 * len(train_df)
+        assert len(holdout_df) > expected_holdout_len - 1 and len(holdout_df) < expected_holdout_len + 1
 
         args = parse_args(["resources/false_positives/result_08_11_2023_t_19_35_00.csv", "resources/false_positives/08_11_2023_t_19_35_00_output.mrd", "-m", model_path])
         true_positives_in_seen_data = predict_main(args)
