@@ -30,7 +30,7 @@ import yaml
 class BigModel(KerasModel):
 
     def features_used(self):
-        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded', 'motifs']
+        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded']
 
     def train(self, df):
         # Not used
