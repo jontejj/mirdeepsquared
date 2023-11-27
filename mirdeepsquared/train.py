@@ -1,12 +1,14 @@
 import os
 import argparse
 import sys
-from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, to_xy_with_location
+from mirdeepsquared.train_ensemble import train_ensemble
+from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, Y_values
+from mirdeepsquared.model import KerasModel
 
 import numpy as np
 
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional, BatchNormalization
+from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -25,12 +27,27 @@ import csv
 import yaml
 
 
+class BigModel(KerasModel):
+    def __init__(self):
+        super().__init__(self, model=None)
+
+    def features_used(self):
+        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded', 'motifs']
+
+    def train(self, df):
+        # Not used
+        pass
+
+    def weight(self):
+        return 8
+
+
 def get_model(consensus_sequences, density_maps, numeric_features, model_size=64, initial_learning_rate=0.0003, regularize=True, dropout_rate=0.8, weight_constraint=3.0):
     max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)
     seq_length = len(max(consensus_sequences, key=len))
 
     # Input 1 - consensus_sequence
-    # TODO: use precursor sequence with LSTM instead?
+    # TODO: remove? It has some importance according to feature_importance.py, is it ruining generalization?
     input_layer_consensus_sequence = Input(shape=(1,), dtype='string', name='consensus_sequence')
     vectorize_layer = TextVectorization(output_mode="int", input_shape=(1,))
     vectorized_layer = vectorize_layer(input_layer_consensus_sequence)
@@ -78,21 +95,21 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
     concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense, precursor_maxpooling_layer])
     dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(concatenated)
 
-    #TODO: remove regularization on output_layer?
+    # TODO: remove regularization on output_layer?
     if regularize:
         dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), kernel_regularizer='l1_l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer='l2')(dropout_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), kernel_regularizer='l1_l2', bias_regularizer='l2', use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
     else:
         dense_layer = Dense(model_size, activation='relu', kernel_constraint=MaxNorm(weight_constraint), kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dropout_layer)
         output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense_layer)
-    #TODO: batch_norm?
-    #batch_norm = BatchNormalization()(dense_layer)
+    # TODO: batch_norm?
+    # batch_norm = BatchNormalization()(dense_layer)
 
     # Input 7 - motifs
-    #input_motifs = Input(shape=(1), dtype='float32', name='has_all_motifs')
-    #concatenated_with_motif_input = Concatenate()([batch_norm, input_motifs])
-    #output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated_with_motif_input)
-    #, input_motifs
+    # input_motifs = Input(shape=(1), dtype='float32', name='has_all_motifs')
+    # concatenated_with_motif_input = Concatenate()([batch_norm, input_motifs])
+    # output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated_with_motif_input)
+    # , input_motifs
     model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features, input_precursor], outputs=output_layer)
 
     lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
@@ -194,7 +211,9 @@ def consume_queue_and_return_last_item(q):
 def train_parameter(parameter, cross_validation_folds, train_results_file, model_output_path, dataset_path, shared_best_mean_max_val_f1_score, shared_lock, best_parameters):
     print("Parameters: " + str(parameter))
     df = read_dataframes(list_of_pickle_files_in(dataset_path))
-    X, Y, _ = to_xy_with_location(prepare_data(df))
+    df = prepare_data(df)
+    X = BigModel().X(df)
+    Y = Y_values(df)
 
     kfold = StratifiedKFold(n_splits=cross_validation_folds, shuffle=True, random_state=42)
     cv_history = []
@@ -238,18 +257,22 @@ def parse_args(args):
     parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('dataset_path', help="Path to the pickle files")  # positional argument
-    parser.add_argument('-o', '--output', help="Path where the model file will be saved", default="best-model.keras")
+    parser.add_argument('-o', '--output', help="Path where the model files will be saved", default="models/")
     parser.add_argument('-hp', '--hyperparameters', help="Path to the hyperparameter config file", default=os.path.join(os.path.dirname(__file__), 'default-hyperparameters.yaml'))
     parser.add_argument('-tr', '--train_results', help="Path to a file training results in it. Used to resume training if it is stopped", default='train-results.csv')
     parser.add_argument('-cvf', '--cross_validation_folds', help="Number of folds to use for cross-validation", default=2)
     parser.add_argument('-p', '--parallelism', help="Number of processes/threads to run in parallel", default=multiprocessing.cpu_count())
+    # TODO: add train_ensemble parameters here?
 
     return parser.parse_args(args)
 
 
 def main():
     args = parse_args(sys.argv[1:])
-    train_main(args.dataset_path, args.output, args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
+    print("Training main model")
+    train_main(args.dataset_path, args.output + "/BigModel_model.keras", args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
+    print("Training ensemble model")
+    train_ensemble(dataset_path=args.dataset_path, model_output_path=args.output)
 
 
 if __name__ == '__main__':

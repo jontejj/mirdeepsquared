@@ -6,6 +6,9 @@ import glob
 import numpy as np
 from pathlib import Path
 import re
+from os import listdir
+from os.path import isfile, join
+
 
 KMER_SIZE = 6
 NUCLEOTIDE_NR = 5  # U C A G D (D for Dummy)
@@ -68,6 +71,13 @@ def save_dataframe_to_pickle(df, pickle_output_file):
 
 def list_of_pickle_files_in(path):
     return glob.glob(path + "/*.pkl")
+
+
+def files_in(path):
+    if isfile(path):
+        return path
+    onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
+    return onlyfiles
 
 
 def read_dataframes(paths):
@@ -166,6 +176,10 @@ def prepare_data(df):
     # df['motifs_one_hot_encoded'] = df.apply(lambda x: one_hot_encode(find_motifs(x['exp'], x['pri_seq']), 2), axis=1)
     df['motifs'] = df.apply(lambda x: find_motifs(x['exp'], x['pri_seq']), axis=1)
     df['has_all_motifs'] = df.apply(lambda x: (x['motifs'] == [1, 1, 1]), axis=1)
+
+    df['combined_numerics'] = df[['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']].apply(lambda row: row.tolist(), axis=1)
+    window_size = 5
+    df['read_density_map_moving_average'] = df.apply(lambda x: np.convolve(x['read_density_map_percentage_change'], np.ones(window_size) / window_size, mode='same'), axis=1)
     return df
 
 
@@ -196,23 +210,9 @@ def split_into_different_files(path_to_pickle_files, pickle_output_path, fractio
     save_dataframe_to_pickle(holdout, pickle_output_path + "/holdout/holdout.pkl")
 
 
-def to_x_with_location(df):
-    locations = df['location'].values.tolist()
-    consensus_texts = np.asarray(df['consensus_sequence_as_sentence'].values.tolist())
-    density_maps = np.asarray(df['read_density_map_percentage_change'].values.tolist())
-    numeric_feature_names = ['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']  # , 'estimated_probability', 'estimated_probability_uncertainty',
-    numeric_features = np.asarray(df[numeric_feature_names])
-
-    structure_as_1D_array = np.asarray(df['structure_as_1D_array'].values.tolist())
-    location_of_mature_star_and_hairpin = np.asarray(df['location_of_mature_star_and_hairpin'].values.tolist())
-    precursors = np.asarray(df['precursor_encoded'].values.tolist())
-    # TODO: add motifs
-    # motifs = np.asarray(df['has_all_motifs'].values.tolist())
-    # , motifs
-    return ((consensus_texts, location_of_mature_star_and_hairpin, density_maps, structure_as_1D_array, numeric_features, precursors), locations)
+def locations_in(df):
+    return df['location'].values.tolist()
 
 
-def to_xy_with_location(df):
-    X, locations = to_x_with_location(df)
-    y_data = np.asarray(df['false_positive'].values.astype(np.float32))
-    return (X, y_data, locations)
+def Y_values(df):
+    return np.asarray(df['false_positive'].values.astype(np.float32))

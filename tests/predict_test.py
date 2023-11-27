@@ -1,4 +1,5 @@
 # Make training reproducable, and test results stable
+from mirdeepsquared.train_ensemble import train_ensemble
 from tensorflow import keras
 keras.utils.set_random_seed(42)
 import tensorflow as tf
@@ -39,3 +40,16 @@ class TestPredict:
         predicted_true_positives_holdout = set(true_positives(model_path, holdout_df))
         difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)
         assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 97
+
+    def test_train_ensemble(self, tmp_path):
+        model_path = str(tmp_path / "models")
+        split_main_path = str(tmp_path / "split-data")
+        split_into_different_files("resources/dataset", split_main_path, 0.8)
+        train_ensemble(split_main_path + "/train", model_path)
+
+        holdout_df = prepare_data(read_dataframes(list_of_pickle_files_in(split_main_path + "/holdout")))
+        expected_true_positives = set(holdout_df[(holdout_df['false_positive'] == False)]['location'])
+        # TODO: improve!
+        predicted_true_positives_holdout = set(true_positives(model_path, holdout_df))
+        difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)
+        assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 92

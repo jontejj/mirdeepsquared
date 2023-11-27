@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     # , 'estimated_probability', 'estimated_probability_uncertainty',
     used_features = ['mature_read_count', 'star_read_count', 'significant_randfold', 'consensus_sequence_as_sentence',
-                     'mature_vs_star_read_ratio', 'structure_as_1D_array', 'read_density_map_percentage_change', 'location_of_mature_star_and_hairpin']
+                     'mature_vs_star_read_ratio', 'structure_as_1D_array', 'read_density_map_percentage_change', 'location_of_mature_star_and_hairpin', 'exp', 'mm_struct']
 
     holdout = ["resources/dataset/split/holdout/holdout.pkl"]
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     X_test, Y_test, _ = to_xy_with_location(prepare_data(df))
     pred = model.predict(X_test)
     pred = (pred >= 0.50)
-    original_F1 = f1_score(X_test, pred)
+    original_F1 = f1_score(Y_test, pred)
 
     print("Original F1-score: " + str(original_F1))
 

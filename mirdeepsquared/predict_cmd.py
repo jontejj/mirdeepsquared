@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import sys
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import argparse
 
 
@@ -10,13 +10,14 @@ def parse_args(args):
 
     parser.add_argument('result_csv')  # positional argument
     parser.add_argument('output_mrd')  # positional argument
-    parser.add_argument('-m', '--model', help="The trained .keras model file to use for the predictions",
-                        default=os.path.join(os.path.dirname(__file__), 'train-simple-model.keras'))
+    parser.add_argument('-m', '--models', help="The path to the trained .keras/.pkl model files to use for the predictions",
+                        default=os.path.join(os.path.dirname(__file__), 'models/'))
     # TODO: add batch-size as argument or automatically calculate it?
     return parser.parse_args(args)
 
 
 def main():
+    # args = parse_args(["resources/not_version_controlled/zebrafish_result_13_11_2023_t_18_47_00.csv", "resources/not_version_controlled/zebrafish_13_11_2023_t_18_47_00_output.mrd", "-m", "models/"])
     args = parse_args(sys.argv[1:])
     # Avoid booting tensorflow until the correct params have been given
     from mirdeepsquared.predict import predict_main
