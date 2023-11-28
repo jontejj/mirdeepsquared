@@ -18,14 +18,12 @@ class MotifModel(MirdeepSquaredModel):
         self.model.fit(self.X(train), Y_values(train))
 
     def save(self, model_path):
-        f = open(model_path, 'wb')
-        pickle.dump(self.model, f)
-        f.close()
+        with open(model_path, 'wb') as f:
+            pickle.dump(self.model, f)
 
     def load(self, model_path):
-        f = open(model_path, 'rb')
-        self.model = pickle.load(f)
-        f.close()
+        with open(model_path, 'rb') as f:
+            self.model = pickle.load(f)
 
     def predict(self, X):
         # Only return the false positive probability

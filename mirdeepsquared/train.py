@@ -1,3 +1,4 @@
+from pathlib import Path
 from mirdeepsquared.train_ensemble import train_ensemble
 from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, Y_values
 from mirdeepsquared.model import KerasModel
@@ -266,10 +267,13 @@ def parse_args(args):
 
 
 def train_both_ensemble_and_big_model(args):
+    model_output_dir = Path(args.output)
+    model_output_dir.mkdir(parents=True, exist_ok=True)
+
     print("Training main model")
-    train_main(args.dataset_path, args.output + "/BigModel_model.keras", args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
+    train_main(args.dataset_path, model_output_dir / "BigModel_model.keras", args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
     print("Training ensemble model")
-    train_ensemble(dataset_path=args.dataset_path, model_output_path=args.output)
+    train_ensemble(dataset_path=args.dataset_path, model_output_path=model_output_dir)
 
 
 def main():

@@ -2,14 +2,12 @@
 import argparse
 import os
 import pandas as pd
-import screed  # a library for reading in FASTA/FASTQ
 import glob
 import numpy as np
 from pathlib import Path
 import re
 from os import listdir
 from os.path import isfile, join
-
 
 KMER_SIZE = 6
 NUCLEOTIDE_NR = 5  # U C A G D (D for Dummy)
@@ -25,25 +23,6 @@ def build_kmers(sequence, ksize):
         kmers.append(kmer)
 
     return kmers
-
-
-def read_kmers_from_file(filename, ksize):
-    all_kmers = []
-    with screed.open(filename) as seqfile:
-        for record in seqfile:
-            sequence = record.sequence
-            kmers = build_kmers(sequence, ksize)
-            all_kmers += kmers
-    return all_kmers
-
-
-def kmers_from_list(list, ksize):
-    all_kmers = []
-    for sequence in list:
-        kmers = build_kmers(sequence, ksize)
-        all_kmers += kmers
-
-    return all_kmers
 
 
 def build_structure_1D(pri_struct, mm_struct, mm_offset, exp):
@@ -106,6 +85,7 @@ def encode_exp(exp):
     """
     Converts 'fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff' to an array like:
           00000000000000000000000000000001111111111111111111111122222222222222223333333333333333333333000000000000000000
+          and then one hot encodes it
     """
     exp_padded = exp.ljust(111, 'f')
     exp_truncated = exp_padded[:111]
@@ -233,7 +213,7 @@ def float_range(minimum, maximum):
         except ValueError:
             raise argparse.ArgumentTypeError("must be a floating point number")
         if f < minimum or f > maximum:
-            raise argparse.ArgumentTypeError("must be in range [" + str(minimum) + " .. " + str(maximum)+"]")
+            raise argparse.ArgumentTypeError("must be in range [" + str(minimum) + " .. " + str(maximum) + "]")
         return f
     # Return function handle to checking function
     return float_range_checker
