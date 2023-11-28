@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from mirdeepsquared.common import split_into_different_files
+from mirdeepsquared.common import float_range, split_into_different_files
 
 
 def parse_args(args):
@@ -9,7 +9,7 @@ def parse_args(args):
 
     parser.add_argument('path_to_pickle_files')  # positional argument
     parser.add_argument('pickle_output_path')  # positional argument
-    parser.add_argument('-f', '--fraction', help="Fraction of items to use for training, between 0 and 1", default=0.8)
+    parser.add_argument('-f', '--fraction', type=float_range(0, 1), help="Fraction of items to use for training, between 0 and 1", default=0.8)
     return parser.parse_args(args)
 
 

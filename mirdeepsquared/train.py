@@ -1,6 +1,3 @@
-import os
-import argparse
-import sys
 from mirdeepsquared.train_ensemble import train_ensemble
 from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, Y_values
 from mirdeepsquared.model import KerasModel
@@ -25,6 +22,9 @@ from concurrent.futures import ProcessPoolExecutor
 
 import csv
 import yaml
+import os
+import argparse
+import sys
 
 
 class BigModel(KerasModel):
@@ -32,12 +32,12 @@ class BigModel(KerasModel):
     def features_used(self):
         return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded']
 
-    def train(self, df):
+    def train(self, train, val):
         # Not used
         pass
 
     def weight(self):
-        return 8
+        return 25
 
 
 def get_model(consensus_sequences, density_maps, numeric_features, model_size=64, initial_learning_rate=0.0003, regularize=True, dropout_rate=0.8, weight_constraint=3.0):
@@ -255,22 +255,26 @@ def parse_args(args):
     parser = argparse.ArgumentParser(prog='MirDeepSquared-train', description='Trains a deep learning model based on dataframes in pickle files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('dataset_path', help="Path to the pickle files")  # positional argument
-    parser.add_argument('-o', '--output', help="Path where the model files will be saved", default="models/")
+    parser.add_argument('-o', '--output', help="Path where the model files will be saved. Existing models in that directory will be overwritten if they have the same names", default="models/")
     parser.add_argument('-hp', '--hyperparameters', help="Path to the hyperparameter config file", default=os.path.join(os.path.dirname(__file__), 'default-hyperparameters.yaml'))
     parser.add_argument('-tr', '--train_results', help="Path to a file training results in it. Used to resume training if it is stopped", default='train-results.csv')
-    parser.add_argument('-cvf', '--cross_validation_folds', help="Number of folds to use for cross-validation", default=2)
-    parser.add_argument('-p', '--parallelism', help="Number of processes/threads to run in parallel", default=multiprocessing.cpu_count())
+    parser.add_argument('-cvf', '--cross_validation_folds', type=int, help="Number of folds to use for cross-validation", default=2)
+    parser.add_argument('-p', '--parallelism', type=int, help="Number of processes/threads to run in parallel", default=multiprocessing.cpu_count())
     # TODO: add train_ensemble parameters here?
 
     return parser.parse_args(args)
 
 
-def main():
-    args = parse_args(sys.argv[1:])
+def train_both_ensemble_and_big_model(args):
     print("Training main model")
     train_main(args.dataset_path, args.output + "/BigModel_model.keras", args.hyperparameters, args.train_results, args.cross_validation_folds, parallelism=args.parallelism)
     print("Training ensemble model")
     train_ensemble(dataset_path=args.dataset_path, model_output_path=args.output)
+
+
+def main():
+    args = parse_args(sys.argv[1:])
+    train_both_ensemble_and_big_model(args)
 
 
 if __name__ == '__main__':

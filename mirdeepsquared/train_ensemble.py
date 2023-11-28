@@ -1,15 +1,14 @@
-from pathlib import Path
-from mirdeepsquared.motifs_bayes_model import MotifModel
-from mirdeepsquared.train_simple_density_map import DensityMapModel
-from mirdeepsquared.train_simple_numerical_feature import NumericalModel
-from mirdeepsquared.train_simple_structure import StructureModel
 from tensorflow import keras
 # Make training reproducable
 keras.utils.set_random_seed(42)
 import tensorflow as tf
 tf.config.experimental.enable_op_determinism()
+from pathlib import Path
+from mirdeepsquared.motifs_bayes_model import MotifModel
+from mirdeepsquared.density_map_model import DensityMapModel
+from mirdeepsquared.numerical_model import NumericalModel
+from mirdeepsquared.structure_model import StructureModel
 from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, read_dataframes, split_data_once
-from tensorflow import keras
 
 
 def train_ensemble(dataset_path, model_output_path):
@@ -21,12 +20,11 @@ def train_ensemble(dataset_path, model_output_path):
     print("False positives:" + str(len(df[(df['false_positive'] == True)])))
     print("True positives:" + str(len(df[(df['false_positive'] == False)])))
 
-    # TODO: how to use the same split for the big model? Train again after figuring out the best parameters?
-    # train_main("resources/dataset/split/train/", "models/Big_Model_best_hyperparameters.keras", "mirdeepsquared/best-hyperparameters.yaml", "train-best-results-for-ensemble.csv", parallelism=2)
-
     train, val = split_data_once(prepare_data(df))
+
+    train_no_generated = train[~train['location'].str.endswith('_generated')]
     motifs = MotifModel()
-    motifs.train(train, val)
+    motifs.train(train_no_generated, val)
     motifs.save(model_output_path + "/MotifModel_motifs.pkl")
 
     density_map_model = DensityMapModel()

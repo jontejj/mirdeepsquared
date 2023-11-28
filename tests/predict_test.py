@@ -39,7 +39,7 @@ class TestPredict:
 
         expected_true_positives = set(holdout_df[(holdout_df['false_positive'] == False)]['location'])
 
-        predicted_true_positives_holdout = set(true_positives(model_path, holdout_df))
+        predicted_true_positives_holdout = set(true_positives(model_path, holdout_df, threshold=0.5))
         difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)
         assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 97
 
@@ -52,6 +52,6 @@ class TestPredict:
         holdout_df = prepare_data(read_dataframes(list_of_pickle_files_in(split_main_path + "/holdout")))
         expected_true_positives = set(holdout_df[(holdout_df['false_positive'] == False)]['location'])
         # TODO: improve!
-        predicted_true_positives_holdout = set(true_positives(model_path, holdout_df))
+        predicted_true_positives_holdout = set(true_positives(model_path, holdout_df, threshold=0.5))
         difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)
         assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 92

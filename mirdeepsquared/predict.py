@@ -5,10 +5,16 @@ from mirdeepsquared.extract_features import extract_features
 from mirdeepsquared.common import files_in, prepare_data, locations_in
 from mirdeepsquared.motifs_bayes_model import MotifModel
 from mirdeepsquared.train import BigModel
-from mirdeepsquared.train_simple_density_map import DensityMapModel
-from mirdeepsquared.train_simple_numerical_feature import NumericalModel
-from mirdeepsquared.train_simple_structure import StructureModel
+from mirdeepsquared.density_map_model import DensityMapModel
+from mirdeepsquared.numerical_model import NumericalModel
+from mirdeepsquared.structure_model import StructureModel
 import numpy as np
+
+
+def cut_off(pred, threshold):
+    # y_predicted = np.round(pred) (default)
+    y_predicted = (pred > threshold).astype(int)
+    return y_predicted
 
 
 def predict_main(args):
@@ -22,7 +28,7 @@ def predict_main(args):
 
     # X = np.asarray(novel_slice['read_density_map_percentage_change'].values.tolist())
 
-    return true_positives(args.models, novel_slice)
+    return true_positives(args.models, novel_slice, args.threshold)
     """
     mature_slice = df.loc[df['predicted_as_novel'] == False]
     if len(mature_slice) > 0:
@@ -52,11 +58,11 @@ def map_filename_to_model(model_path):
     raise ValueError(f'Unknown model type based on path: {model_path}, make sure you only have models in the model path provided')
 
 
-def true_positives(model_path, df):
+def true_positives(model_path, df, threshold):
     ensemble_predictions = predict(model_path, df)
 
     # Convert the averaged predictions to binary predictions (0 or 1)
-    pred = np.round(ensemble_predictions)
+    pred = cut_off(ensemble_predictions, threshold)
     # pred = (ensemble_predictions >= 0.50)  # If probability is equal or higher than 0.50, It's most likely a false positive (True)
     locations = locations_in(df)
 

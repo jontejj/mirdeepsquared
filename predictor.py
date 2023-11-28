@@ -1,13 +1,16 @@
+import argparse
 import os
+from pathlib import Path
+import sys
+import shutil
 
 
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
-from mirdeepsquared.common import files_in, list_of_pickle_files_in, prepare_data, read_dataframes, split_data_once, Y_values
-from mirdeepsquared.predict import map_filename_to_model, predict
+from mirdeepsquared.common import files_in, float_range, list_of_pickle_files_in, locations_in, prepare_data, read_dataframes, Y_values
+from mirdeepsquared.predict import cut_off, map_filename_to_model, predict
 import numpy as np
-# from mirdeepsquared.train_simple_motifs import all_true_or_random
 
 
 def balance_classes(df, target_column):
@@ -16,7 +19,6 @@ def balance_classes(df, target_column):
 
     # Use groupby and apply to get a balanced DataFrame
     balanced_df = df.groupby(target_column).apply(lambda x: x.sample(min_samples)).reset_index(drop=True)
-
     return balanced_df
 
 
@@ -27,74 +29,103 @@ def binary_crossentropy(pred, Y):
     return -np.mean(Y * np.log(pred) + (1 - Y) * np.log(1 - pred))
 
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(prog='MirDeepSquared-test', description='Outputs accuracy scores for a model')
+
+    parser.add_argument('dataset')  # positional argument
+    parser.add_argument('model_path', help="The path to the trained .keras/.pkl model files to use for the predictions")  # positional argument
+    parser.add_argument('--output_pdf', help="Where to put pdf:s for the wrong predictions", nargs='?', default=argparse.SUPPRESS)
+    parser.add_argument('-t', '--threshold', type=float_range(0, 1), help="Threshold to use for determining if predictions are treated as true positives or not, between 0 and 1", default=0.5)
+    return parser.parse_args(args)
+
+
+def print_measurements(Y_test, pred):
+    print("Confusion matrix:")
+    print(confusion_matrix(Y_test, pred))
+    print("Accuracy: " + str(accuracy_score(Y_test, pred)))
+    print("F1-score: " + str(f1_score(Y_test, pred)))
+    bce = binary_crossentropy(pred, Y_test)
+    print("Binary Crossentropy:", bce)
+
+
+def find_pdf(location, source_pickle):
+    pdf_dirs = {'mouse.mature.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/mouse/pdfs_21_11_2023_t_09_54_51/',
+                'zebrafish.mature.2nd.run.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/zebrafish/pdfs_20_11_2023_t_14_11_15/',
+                'false_positives_SRR2496781-84_bigger.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/SRR2496781-84/pdfs_08_11_2023_t_19_35_00/',
+                'true_positives_TCGA_BRCA.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-BRCA/pdfs_30_12_2022_t_12_51_40/',
+                'true_positives_TCGA_LUSC_only_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/pdfs_19_01_2023_t_23_35_49/',
+                'true_positives_TCGA_LIHC.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LIHC/pdfs_11_04_2023_t_12_39_19/'}
+    try:
+        return pdf_dirs[source_pickle] + location + ".pdf"
+    except KeyError:
+        print(f'No pdf found for {location} ({source_pickle})')
+        return None
+
+
+def output_pdf(location, source_pickle, pdf_path):
+    pdf = find_pdf(location, source_pickle)
+    if pdf is not None:
+        shutil.copyfile(pdf, pdf_path + "/" + source_pickle + "_" + location + ".pdf")
+
+
 if __name__ == '__main__':
-    path = "resources/dataset/split/holdout"
-    # df = read_dataframes(list_of_pickle_files_in("resources/dataset/other_species/true_positives/zebrafish"))
+    # args = parse_args(["resources/dataset/split/holdout", "models/"])
+    args = parse_args(sys.argv[1:])
+    path = args.dataset
     list_of_files = list_of_pickle_files_in(path)
     print("Predicting for samples in: " + str([os.path.basename(path) for path in list_of_files]))
-    df = prepare_data(read_dataframes(list_of_files))  # easy/split/holdout
+    df = prepare_data(read_dataframes(list_of_files))
     print("False positives:" + str(len(df[(df['false_positive'] == True)])))
     print("True positives:" + str(len(df[(df['false_positive'] == False)])))
 
-    models = [map_filename_to_model(model_file) for model_file in files_in("models/")]
+    Y_test = Y_values(df)
+    locations_test = locations_in(df)
+
+    models = [map_filename_to_model(model_file) for model_file in files_in(args.model_path)]
+
+    problematic_samples = {location: 0 for location in locations_test}
+
     for model in models:
-        Y_test = Y_values(df)
         print("Model: " + str(model))
         pred = model.predict(model.X(df))
-        pred = np.round(pred)
-        print("Test Confusion matrix:")
-        print(confusion_matrix(Y_test, pred))
-        print("Test Accuracy: " + str(accuracy_score(Y_test, pred)))
-        print("Test F1-score: " + str(f1_score(Y_test, pred)))
-        bce = binary_crossentropy(pred, Y_test)
-        print("Binary Crossentropy:", bce)
+        pred = cut_off(pred, args.threshold)
+        print_measurements(Y_test, pred)
+        too_confident_count = 0
+        for i in range(0, len(pred)):
+            if pred[i] != Y_test[i]:
+                if (pred[i] > 0.90 and Y_test[i] == 0) or (pred[i] < 0.10 and Y_test[i] == 1):
+                    too_confident_count += 1
+                problematic_samples[locations_test[i]] += 1
+        print(f'Too confident for {too_confident_count} samples')
 
-    # Check validation scores
-    path = "resources/dataset/split/train"
-    # df = read_dataframes(list_of_pickle_files_in("resources/dataset/other_species/true_positives/zebrafish"))
-    list_of_files = list_of_pickle_files_in(path)
-    df = prepare_data(read_dataframes(list_of_files))
-    train, val = split_data_once(prepare_data(df))
-    Y_val = Y_values(val)
-    for model in models:
-        print("Model: " + str(model))
-        pred = model.predict(model.X(val))
-        pred = np.round(pred)
-        print("Val Confusion matrix:")
-        print(confusion_matrix(Y_val, pred))
-        print("Val Accuracy: " + str(accuracy_score(Y_val, pred)))
-        print("Val F1-score: " + str(f1_score(Y_val, pred)))
-        bce = binary_crossentropy(pred, Y_val)
-        print("Binary Crossentropy:", bce)
+    if hasattr(args, 'output_pdf'):
+        Path(args.output_pdf + "/ensemble").mkdir(parents=True, exist_ok=True)
+        Path(args.output_pdf + "/most_problematic").mkdir(parents=True, exist_ok=True)
+
+    print("Most problematic samples: ")
+    most_problematic_samples = dict(sorted(problematic_samples.items(), key=lambda item: item[1], reverse=True))
+    count = 0
+    for key, value in most_problematic_samples.items():
+        if value > 0:
+            source_pickle = df[(df['location'] == key)]['source_pickle'].array[0]
+            print(f'{key}: {value}. Source pickle: {source_pickle}')
+            if hasattr(args, 'output_pdf'):
+                output_pdf(key, source_pickle, args.output_pdf + "/most_problematic")
+            count += 1
+            if count == 20:
+                break
+    print(f'Printed {count} of the most problematic samples')
 
     print("Ensemble Model: ")
-    ensemble_predictions = predict("models/", val)
+    ensemble_predictions = predict(args.model_path, df)
     # Convert the averaged predictions to binary predictions (0 or 1)
-    pred = np.round(ensemble_predictions)
-    print("Val Confusion matrix:")
-    print(confusion_matrix(Y_val, pred))
-    print("Val Accuracy: " + str(accuracy_score(Y_val, pred)))
-    print("Val F1-score: " + str(f1_score(Y_val, pred)))
-    bce = binary_crossentropy(pred, Y_val)
-    print("Binary Crossentropy:", bce)
-"""
-    #TODO: remove prepare_data if done above
-    X_test, Y_test, locations_test = to_xy_with_location(prepare_data(df))
-    # TODO: use estimated_probability_uncertainty to decide which model to use (ensemble)
-    model = load_model("mirdeepsquared/train-simple-model.keras")
-    # model = load_model("mirdeepsquared/train-simple-model-motifs.keras")
-    # model = load_model("mirdeepsquared/train-simple-model-numerical-features.keras")
-    # model = load_model("mirdeepsquared/train-simple-model-density-map.keras")
-    # model = load_model("mirdeepsquared/train-simple-model-precursors.keras")
-    pred = model.predict(X_test)
-    # pred = [not all_true_or_random(x) for x in X_test[6]]  # X_test[1], X_test[2], X_test[5])  #
-    pred = (pred >= 0.50)  # If probability is equal or higher than 0.50, It's most likely a false positive (True)
-    print("Test Confusion matrix:")
-    print(confusion_matrix(Y_test, pred))
-    print("Test Accuracy: " + str(accuracy_score(Y_test, pred)))
-    print("Test F1-score: " + str(f1_score(Y_test, pred)))
+    pred = cut_off(ensemble_predictions, args.threshold)
+    print_measurements(Y_test, pred)
+
+    print("Wrong predictions for ensemble model:")
     for i in range(0, len(pred)):
         if pred[i] != Y_test[i]:
             source_pickle = df[(df['location'] == locations_test[i])]['source_pickle'].array[0]
             print(f'Predicted: {not pred[i]} positive for {locations_test[i]}, real is: {not bool(Y_test[i])} positive. Source pickle: {source_pickle}')
-"""
+            if hasattr(args, 'output_pdf'):
+                output_pdf(locations_test[i], source_pickle, args.output_pdf + "/ensemble")

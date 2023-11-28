@@ -1,4 +1,5 @@
 # Functions that don't require tensorflow can be placed here. This avoids long boot times for programs that don't use tensorflow
+import argparse
 import os
 import pandas as pd
 import screed  # a library for reading in FASTA/FASTQ
@@ -70,6 +71,7 @@ def save_dataframe_to_pickle(df, pickle_output_file):
 
 
 def list_of_pickle_files_in(path):
+    # TODO: add support for single pickle files as well like in files_in(path)
     return glob.glob(path + "/*.pkl")
 
 
@@ -216,3 +218,22 @@ def locations_in(df):
 
 def Y_values(df):
     return np.asarray(df['false_positive'].values.astype(np.float32))
+
+
+def float_range(minimum, maximum):
+    """Return function handle of an argument type function for
+       ArgumentParser checking a float range: mini <= arg <= ****
+         minimum - minimum acceptable argument
+         maximum - maximum acceptable argument"""
+    # Define the function with default arguments
+    def float_range_checker(arg):
+        """New Type function for argparse - a float within predefined range."""
+        try:
+            f = float(arg)
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a floating point number")
+        if f < minimum or f > maximum:
+            raise argparse.ArgumentTypeError("must be in range [" + str(minimum) + " .. " + str(maximum)+"]")
+        return f
+    # Return function handle to checking function
+    return float_range_checker

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import sys
+
+from mirdeepsquared.common import float_range
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import argparse
 
@@ -12,6 +14,7 @@ def parse_args(args):
     parser.add_argument('output_mrd')  # positional argument
     parser.add_argument('-m', '--models', help="The path to the trained .keras/.pkl model files to use for the predictions",
                         default=os.path.join(os.path.dirname(__file__), 'models/'))
+    parser.add_argument('-t', '--threshold', type=float_range(0, 1), help="Threshold to use for determining if predictions are treated as true positives or not, between 0 and 1. A lower number means more samples reported as true positives.", default=0.5)
     # TODO: add batch-size as argument or automatically calculate it?
     return parser.parse_args(args)
 

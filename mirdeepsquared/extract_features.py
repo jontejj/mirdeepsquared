@@ -23,7 +23,7 @@ def process_mrd_file(mrd_filepath):
     location_name = ""
     read_density_map = np.zeros(112, dtype=np.int32)
     for x in mrd:
-        # TODO: can also be cel-miR-38 etc... (or d03_29148352_x2 (Zebrafish samples))
+        # TODO: can also be cel-miR-38 etc... (but how many reads are there for those?)
         match_for_read = re.search(r"[A-Za-z0-9]{3}_(\d*)_x(\d*)\s+([\.ucagUCAGN]*)\t\d*\n", x)
         if x.startswith(">"):
             location_name = x[1:-1]  # Usually chromosome location
