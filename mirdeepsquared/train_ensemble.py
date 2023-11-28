@@ -25,16 +25,16 @@ def train_ensemble(dataset_path, model_output_path):
     train_no_generated = train[~train['location'].str.endswith('_generated')]
     motifs = MotifModel()
     motifs.train(train_no_generated, val)
-    motifs.save(model_output_path + "/MotifModel_motifs.pkl")
+    motifs.save(model_output_dir / "MotifModel_motifs.pkl")
 
     density_map_model = DensityMapModel()
     density_map_model.train(train, val)
-    density_map_model.save(model_output_path + "/DensityMapModel_with_location_of_mature_star_and_hairpin.keras")
+    density_map_model.save(model_output_dir / "DensityMapModel_with_location_of_mature_star_and_hairpin.keras")
 
     structure_model = StructureModel()
     structure_model.train(train, val)
-    structure_model.save(model_output_path + "/StructureModel_simple.keras")
+    structure_model.save(model_output_dir / "StructureModel_simple.keras")
 
     numerical_model = NumericalModel()
     numerical_model.train(train, val)
-    numerical_model.save(model_output_path + "/NumericalModel_simple.keras")
+    numerical_model.save(model_output_dir / "NumericalModel_simple.keras")
