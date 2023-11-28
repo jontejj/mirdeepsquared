@@ -15,7 +15,9 @@ import multiprocessing
 class TestPredict:
 
     def train(self, tmp_path):
-        model_path = str(tmp_path / "models/BigModel_testpredict.keras")
+        models_path = tmp_path / "models"
+        models_path.mkdir()
+        model_path = str(models_path / "BigModel_testpredict.keras")
         train_results_file = str(tmp_path / "train_results_tmp.csv")
         split_main_path = str(tmp_path / "split-data")
         split_into_different_files("resources/dataset", split_main_path, 0.8)
