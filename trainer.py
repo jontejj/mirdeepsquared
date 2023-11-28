@@ -1,5 +1,5 @@
 from mirdeepsquared.train import parse_args, train_both_ensemble_and_big_model
 
 if __name__ == '__main__':
-    args = parse_args(["resources/dataset/split-val/train", "-o", "models/", "-hp", "mirdeepsquared/best-hyperparameters.yaml", "-tr", "trainer-results.csv"])
+    args = parse_args(["resources/dataset/split/train", "-o", "models/", "-hp", "mirdeepsquared/best-hyperparameters.yaml", "-tr", "trainer-results.csv"])
     train_both_ensemble_and_big_model(args)

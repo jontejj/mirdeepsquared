@@ -62,10 +62,10 @@ def find_pdf(location, source_pickle):
         return None
 
 
-def output_pdf(location, source_pickle, pdf_path):
+def output_pdf(location, source_pickle, pdf_path, actual_label):
     pdf = find_pdf(location, source_pickle)
     if pdf is not None:
-        shutil.copyfile(pdf, pdf_path + "/" + source_pickle + "_" + location + ".pdf")
+        shutil.copyfile(pdf, pdf_path + "/" + str(int(actual_label)) + "_" + source_pickle + "_" + location + ".pdf")
 
 
 if __name__ == '__main__':
@@ -110,7 +110,7 @@ if __name__ == '__main__':
             source_pickle = df[(df['location'] == key)]['source_pickle'].array[0]
             print(f'{key}: {value}. Source pickle: {source_pickle}')
             if hasattr(args, 'output_pdf'):
-                output_pdf(key, source_pickle, args.output_pdf + "/most_problematic")
+                output_pdf(key, source_pickle, args.output_pdf + "/most_problematic", df[(df['location'] == key)]['false_positive'].array[0])
             count += 1
             if count == 20:
                 break
@@ -128,4 +128,4 @@ if __name__ == '__main__':
             source_pickle = df[(df['location'] == locations_test[i])]['source_pickle'].array[0]
             print(f'Predicted: {not pred[i]} positive for {locations_test[i]}, real is: {not bool(Y_test[i])} positive. Source pickle: {source_pickle}')
             if hasattr(args, 'output_pdf'):
-                output_pdf(locations_test[i], source_pickle, args.output_pdf + "/ensemble")
+                output_pdf(locations_test[i], source_pickle, args.output_pdf + "/ensemble", Y_test[i])

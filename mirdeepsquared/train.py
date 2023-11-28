@@ -33,7 +33,7 @@ class BigModel(KerasModel):
         return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded']
 
     def train(self, train, val):
-        # Not used
+        # TODO: Right now this is not used, but it should be so that other models also can be cross-validated / tuned / etc
         pass
 
     def weight(self):
