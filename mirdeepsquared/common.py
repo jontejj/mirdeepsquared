@@ -75,7 +75,7 @@ def list_of_pickle_files_in(path):
 
 def files_in(path):
     if isfile(path):
-        return path
+        return [path]
     onlyfiles = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
     return onlyfiles
 
