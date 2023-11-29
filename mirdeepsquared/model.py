@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from keras.saving import load_model
 import numpy as np
+import tensorflow as tf
 
 
 class MirdeepSquaredModel(ABC):
@@ -45,7 +45,7 @@ class KerasModel(MirdeepSquaredModel):
         pass
 
     def load(self, model_path):
-        self.model = load_model(model_path)
+        self.model = tf.keras.models.load_model(model_path)
 
     def save(self, model_path):
         self.model.save(model_path)

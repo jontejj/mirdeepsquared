@@ -1,5 +1,7 @@
 # Remember to also add the dependency to setup.py (install_requires)
-tensorflow==2.14.0
+# Note: Saving/loading of Normalization/Embedding layers in tensorflow 2.14 and 2.15 are not compatible with each other
+# If the model is saved with one version, it's safest to also load with that version
+tensorflow>=2.14,<2.15
 screed==1.1.2
 pandas==2.1.2
 scikit-learn==1.3.2

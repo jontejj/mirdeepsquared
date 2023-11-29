@@ -69,6 +69,7 @@ def read_dataframes(paths):
             df['source_pickle'] = os.path.basename(path)
         dfs.append(df)
 
+    # TODO: handle if only one element in dfs
     concatenated = pd.concat(dfs, axis=0)
     concatenated.reset_index(inplace=True, drop=True)
     return concatenated
