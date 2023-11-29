@@ -103,6 +103,12 @@ To test how well the model generalizes, a dataset was also created for Zebrafish
 
 By generating ```false_positives_with_empty_read_density_maps.pkl``` with ```generate_data.py``` the accuracy increased to 94.4% (Big cross-validated model (```trainer.py```), with best-hyperparameters.yaml, trained on: true_positives_TCGA_LUSC_only_in_mirgene_db.pkl + true_positives_TCGA_BRCA.pkl + mouse.mature.pkl + false_positives_with_empty_read_density_maps.pkl + false_positives_SRR2496781-84_bigger.pkl and evaluated on holdout + zebrafish.mature.2nd.run.pkl.
 
+By combining ```density_map_model.py```, ```motifs_bayes_model.py```, ```numerical_model.py```, ```structure_model.py``` and the big model trained (in ```train.py```) with ```mirdeepsquared/best-hyperparameters.yaml``` into an ensemble model, the accuracy on the holdout data increased to 96%.
+
+[dev.md](dev.md) was then used to release a mirdeepsquared package to https://pypi.org/.
+
+The most problematic samples were then collected into pdf:s by ```predictor.py``` for analysis by experts used to filter out false positives from miRdeep2. *TODO*: retrain after correcting invalid sample labels
+
 [i1]: https://github.com/jontejj/mirdeepsquared/issues/1
 
 [genome1] : https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000002035.6/
