@@ -65,7 +65,6 @@ def add_info_from_result_file(result_filepath, data_from_mrd):
     for x in result_file:
         if x.startswith("novel miRNAs predicted by miRDeep2"):
             started = True
-            # TODO: can this be gotten from the lack of "miRNA with same seed" in output.mrd instead?
             is_novel = True
         elif x.startswith("mature miRBase miRNAs detected by miRDeep2"):
             is_novel = False

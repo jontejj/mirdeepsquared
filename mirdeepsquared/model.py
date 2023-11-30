@@ -7,9 +7,11 @@ class MirdeepSquaredModel(ABC):
 
     @abstractmethod
     def features_used(self):
+        """Returns the column names of the features that this model uses"""
         pass
 
     def X(self, df):
+        """Returns the data for the features listed in features_used for the given dataframe"""
         if len(self.features_used()) == 1:
             # This avoids having to unpack the tuple later
             return np.asarray(df[self.features_used()[0]].values.tolist())
@@ -23,10 +25,12 @@ class MirdeepSquaredModel(ABC):
 
     @abstractmethod
     def save(self, model_path):
+        """Saves self.model into a file at model_path"""
         pass
 
     @abstractmethod
     def load(self, model_path):
+        """Loads a model into self.model from the file at model_path"""
         pass
 
     @abstractmethod
@@ -36,6 +40,7 @@ class MirdeepSquaredModel(ABC):
 
     @abstractmethod
     def weight(self):
+        """A relative weight, compared to the other models, used to make predictions from better models matter more"""
         pass
 
 

@@ -31,7 +31,8 @@ import sys
 class BigModel(KerasModel):
 
     def features_used(self):
-        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'precursor_encoded']
+        # TODO: test with encoded precursor instead of pri_seq_encoded
+        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'pri_seq_encoded']
 
     def train(self, train, val):
         # TODO: Right now this is not used, but it should be so that other models also can be cross-validated / tuned / etc
@@ -86,7 +87,6 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
     # Input 6 - precursor sequence
     input_precursor = Input(shape=(111, 5), dtype='float32', name='precursor')
     precursor_conv1d_k3 = Conv1D(filters=64, kernel_size=3, activation='relu')(input_precursor)  # 64 filters -> 0.872, 128 -> 0.848
-    # avg_pooling_k3 = AveragePooling1D(pool_size=2)(conv1d_k3)
     precursor_conv1d_k5 = Conv1D(filters=64, kernel_size=5, activation='relu')(input_precursor)
     precursor_concatenated = Concatenate(axis=1)([precursor_conv1d_k5, precursor_conv1d_k3])
     precursor_maxpooling_layer = GlobalMaxPooling1D()(precursor_concatenated)
@@ -261,7 +261,6 @@ def parse_args(args):
     parser.add_argument('-tr', '--train_results', help="Path to a file training results in it. Used to resume training if it is stopped", default='train-results.csv')
     parser.add_argument('-cvf', '--cross_validation_folds', type=int, help="Number of folds to use for cross-validation", default=2)
     parser.add_argument('-p', '--parallelism', type=int, help="Number of processes/threads to run in parallel", default=multiprocessing.cpu_count())
-    # TODO: add train_ensemble parameters here?
 
     return parser.parse_args(args)
 

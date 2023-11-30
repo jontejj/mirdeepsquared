@@ -1,0 +1,16 @@
+
+#!/usr/bin/env bash
+# After running the steps in prepare_default_dataset.sh these steps can be run to generate some tricky edge cases
+# where the mature sequence is found in mirgene db but the rest of the precursor sequence is not found there.
+
+python mirdeepsquared/mirgene_db_filter.py resources/dataset/true_positives/true_positives_TCGA_BRCA.pkl resources/known-mature-sequences-h_sapiens.fas resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_TCGA_BRCA_only_mature_in_mirgene_db.pkl
+python subset.py resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_TCGA_BRCA_only_mature_in_mirgene_db.pkl resources/dataset/true_positives_TCGA_BRCA_only_precursors_in_mirgene_db.pkl resources/dataset/hard/only_matching_mature_in_mirgene_db/tricky_true_positives_TCGA_BRCA.pkl
+
+python mirdeepsquared/mirgene_db_filter.py resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl resources/known-mature-sequences-h_sapiens.fas resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_TCGA_LUSC_only_mature_in_mirgene_db.pkl
+python subset.py resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_TCGA_LUSC_only_mature_in_mirgene_db.pkl resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl resources/dataset/hard/only_matching_mature_in_mirgene_db/tricky_true_positives_TCGA_LUSC.pkl
+
+python mirdeepsquared/mirgene_db_filter.py resources/dataset/other_species/true_positives/mouse/mouse.mature.pkl resources/dataset/other_species/true_positives/mouse/mmu.fas resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_mouse_only_mature_in_mirgene_db.pkl
+python subset.py resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_mouse_only_mature_in_mirgene_db.pkl resources/dataset/split/train/mouse.mature_only_mirgene_db.pkl resources/dataset/hard/only_matching_mature_in_mirgene_db/tricky_true_positives_mouse.pkl
+
+python mirdeepsquared/mirgene_db_filter.py resources/dataset/other_species/true_positives/zebrafish/zebrafish.mature.2nd.run.pkl resources/dataset/other_species/true_positives/zebrafish/dre.fas resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_zebrafish_only_mature_in_mirgene_db.pkl
+resources/dataset/hard/only_matching_mature_in_mirgene_db/tmp/true_positives_zebrafish_only_mature_in_mirgene_db.pkl resources/dataset/split/holdout/zebrafish.mature.2nd.run_only_in_mirgene_db.pkl resources/dataset/hard/only_matching_mature_in_mirgene_db/tricky_true_positives_zebrafish.pkl

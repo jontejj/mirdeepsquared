@@ -49,12 +49,18 @@ def print_measurements(Y_test, pred):
 
 
 def find_pdf(location, source_pickle):
-    pdf_dirs = {'mouse.mature.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/mouse/pdfs_21_11_2023_t_09_54_51/',
-                'zebrafish.mature.2nd.run.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/zebrafish/pdfs_20_11_2023_t_14_11_15/',
+    pdf_dirs = {'mouse.mature_only_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/mouse/pdfs_21_11_2023_t_09_54_51/',
+                'mouse.mature.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/mouse/pdfs_21_11_2023_t_09_54_51/',
+                'zebrafish.mature.2nd.run_only_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/zebrafish/pdfs_20_11_2023_t_14_11_15/',
                 'false_positives_SRR2496781-84_bigger.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/SRR2496781-84/pdfs_08_11_2023_t_19_35_00/',
-                'true_positives_TCGA_BRCA.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-BRCA/pdfs_30_12_2022_t_12_51_40/',
-                'true_positives_TCGA_LUSC_only_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/pdfs_19_01_2023_t_23_35_49/',
-                'true_positives_TCGA_LIHC.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LIHC/pdfs_11_04_2023_t_12_39_19/'}
+                'true_positives_TCGA_BRCA_only_precursors_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-BRCA/pdfs_30_12_2022_t_12_51_40/',
+                'true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/pdfs_19_01_2023_t_23_35_49/',
+                'true_positives_TCGA_LIHC_only_precursors_in_mirgene_db.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LIHC/pdfs_11_04_2023_t_12_39_19/',
+                'tricky_true_positives_zebrafish.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/zebrafish/pdfs_20_11_2023_t_14_11_15/',
+                'tricky_true_positives_TCGA_BRCA.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-BRCA/pdfs_30_12_2022_t_12_51_40/',
+                'tricky_true_positives_TCGA_LUSC.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/pdfs_19_01_2023_t_23_35_49/',
+                'tricky_true_positives_mouse.pkl': '/Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/mouse/pdfs_21_11_2023_t_09_54_51/'
+                }
     try:
         return pdf_dirs[source_pickle] + location + ".pdf"
     except KeyError:
@@ -69,7 +75,7 @@ def output_pdf(location, source_pickle, pdf_path, actual_label):
 
 
 if __name__ == '__main__':
-    # args = parse_args(["resources/dataset/split/holdout", "models/"])
+    # args = parse_args(["resources/dataset/split/holdout", "models3/", "-t", "0.6"])
     args = parse_args(sys.argv[1:])
     path = args.dataset
     list_of_files = list_of_pickle_files_in(path)

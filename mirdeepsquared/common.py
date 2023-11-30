@@ -25,14 +25,14 @@ def build_kmers(sequence, ksize):
     return kmers
 
 
-def build_structure_1D(pri_struct, mm_struct, mm_offset, exp):
+def build_structure_1D(pri_struct, exp):
     pri_struct_padded = pri_struct.ljust(111, '-')
     pri_struct_truncated = pri_struct_padded[:111]
 
     exp_padded = exp.ljust(111, 'f')
     exp_truncated = exp_padded[:111]
 
-    # Defines a vocabalary index for structural information, S = Star, l = hairpin, M = Mature
+    # Defines a vocabalary index for structural information, S = Star, l = loop, M = Mature, f = surrounding precursor / "nothing"
     char_mappings = {}
     char_mappings['f'] = {'-': 0, '.': 1, '(': 2, ')': 3}
     char_mappings['S'] = {'-': 4, '.': 5, '(': 6, ')': 7}
@@ -50,7 +50,8 @@ def save_dataframe_to_pickle(df, pickle_output_file):
 
 
 def list_of_pickle_files_in(path):
-    # TODO: add support for single pickle files as well like in files_in(path)
+    if isfile(path) and path.endswith('.pkl'):
+        return [path]
     return glob.glob(path + "/*.pkl")
 
 
@@ -69,7 +70,6 @@ def read_dataframes(paths):
             df['source_pickle'] = os.path.basename(path)
         dfs.append(df)
 
-    # TODO: handle if only one element in dfs
     concatenated = pd.concat(dfs, axis=0)
     concatenated.reset_index(inplace=True, drop=True)
     return concatenated
@@ -97,12 +97,23 @@ def encode_exp(exp):
     return one_hot_encoded
 
 
-def encode_precursor(precursor):
-    precursor_padded = precursor.ljust(111, 'D')
-    precursor_truncated = precursor_padded[:111]
+def extract_precursor_from_exp_and_pri_seq(exp, pri_seq):
+    """Extracts ugcugguuucuuccacagugguacuuuccauuagaacuaucaccggguggaaacuagcagu from
+    exp:      fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff
+    pri_seq:  caacuauuauucucggaucagaucgagccauugcugguuucuuccacagugguacuuuccauuagaacuaucaccggguggaaacuagcaguggcucgaucuuuuccacu
+        """
+    beginning = min(exp.find('M'), exp.find('S'))
+    end = max(exp.rfind('M'), exp.rfind('S')) + 1
+    precursor = pri_seq[beginning:end]
+    return precursor
+
+
+def one_hot_encode_sequence(sequence, max_length=111):
+    sequence_padded = sequence.ljust(max_length, 'D')
+    sequence_truncated = sequence_padded[:max_length]
 
     char_mapping = {'D': 0, 'u': 1, 'g': 2, 'c': 3, 'a': 4}
-    indices = [char_mapping[char] for char in precursor_truncated]
+    indices = [char_mapping[char] for char in sequence_truncated]
     one_hot_encoded = np.eye(len(char_mapping))[indices]
     return one_hot_encoded
 
@@ -115,7 +126,6 @@ def find_motifs(exp, pri_seq):
     But according to https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4613790/, the CNNC motif can be positioned 16-18 nt downstream
     """
     # exp like: fffffffffffffffffffffffffffffffSSSSSSSSSSSSSSSSSSSSSSSllllllllllllllllMMMMMMMMMMMMMMMMMMMMMMffffffffffffffffff
-    # TODO: how to handle padding/truncation?
 
     star_offset = exp.find('S')
     star_end = exp.rfind('S') + 1
@@ -151,10 +161,11 @@ def prepare_data(df):
     # feature_interaction = feature1 * feature2
     # feature_log = np.log(feature1) or np.log(feature1) / np.log(feature2)
     df['mature_vs_star_read_ratio'] = df.apply(lambda x: x['mature_read_count'] / (x['star_read_count'] + EPSILON), axis=1)
-    df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['mm_struct'], x['mm_offset'], x['exp']), axis=1)
+    df['structure_as_1D_array'] = df.apply(lambda x: build_structure_1D(x['pri_struct'], x['exp']), axis=1)
     df['read_density_map_percentage_change'] = df.apply(lambda x: calc_percentage_change(x['read_density_map']), axis=1)
     df['location_of_mature_star_and_hairpin'] = df.apply(lambda x: encode_exp(x['exp']), axis=1)
-    df['precursor_encoded'] = df.apply(lambda x: encode_precursor(x['pri_seq']), axis=1)
+    df['precursor'] = df.apply(lambda x: extract_precursor_from_exp_and_pri_seq(x['exp'], x['pri_seq']), axis=1)
+    df['pri_seq_encoded'] = df.apply(lambda x: one_hot_encode_sequence(x['pri_seq']), axis=1)
     # df[['has_ug_motif', 'has_ugu_motif', 'has_cnnc_motif']] = df.apply(lambda x: pd.Series(find_motifs(x['exp'], x['pri_seq'])), axis=1)
     # df['motifs_one_hot_encoded'] = df.apply(lambda x: one_hot_encode(find_motifs(x['exp'], x['pri_seq']), 2), axis=1)
     df['motifs'] = df.apply(lambda x: find_motifs(x['exp'], x['pri_seq']), axis=1)

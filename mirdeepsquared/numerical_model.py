@@ -18,9 +18,7 @@ class NumericalModel(KerasModel):
         X_val = self.X(val)
         Y_val = Y_values(val)
 
-        # single_numeric_data = numeric_features[:, 4].reshape(-1, 1)  # Estimated probability (too good...)
-
-        input = Input(shape=(4,), dtype='int32')  # TODO: float?
+        input = Input(shape=(4,), dtype='float32')
         normalizer_layer = Normalization()
         normalizer_layer.adapt(X_train)
         numeric_features_dense = Dense(8, activation='relu')(normalizer_layer(input))

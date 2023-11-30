@@ -38,3 +38,4 @@ def train_ensemble(dataset_path, model_output_path):
     numerical_model = NumericalModel()
     numerical_model.train(train, val)
     numerical_model.save(model_output_dir / "NumericalModel_simple.keras")
+

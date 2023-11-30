@@ -27,9 +27,7 @@ class StructureModel(KerasModel):
         input = Input(shape=(111,), dtype='float32', name='structure_as_1D_array')
         embedding_layer = Embedding(input_dim=17, output_dim=128, input_length=111, mask_zero=True)(input)
         bidirectional_lstm = Bidirectional(LSTM(128))(embedding_layer)
-        # dense_after_lstm = Dense(64, activation='relu', kernel_initializer=HeNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(bidirectional_lstm)
         dense = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer=l2(l2_strength))(bidirectional_lstm)
-        # global_average = GlobalAveragePooling1D()(dense)
         output_layer = Dense(1, activation='sigmoid', kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength), kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense)
 
         self.model = Model(inputs=[input], outputs=output_layer)
@@ -38,10 +36,6 @@ class StructureModel(KerasModel):
         self.model.summary()
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
 
-        # log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        # tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-        # Resume and improve accuracy
-        # model = load_model("train-simple-model.keras")
         history = self.model.fit(X_train, Y_train, epochs=200, batch_size=16, validation_data=(X_val, Y_val), callbacks=[early_stopping])
         print(history.history)
 

@@ -14,6 +14,6 @@ if __name__ == '__main__':
     # TODO: Is chr3_3_3199 (https://drive.google.com/file/d/1NHVvLKS6NTbdNszBcjoMbW473oC_s_JJ/view?usp=drive_link) a true positive?
     # chr12_12_57335 exists in mirgene db (hsa-mir-6502) but is not a true positive in the TCGA_LUSC datafile.
     # chr12_12_57336 is an example of an actual true positive
-    correct_label("resources/dataset/true_positives_TCGA_LUSC_only_in_mirgene_db.pkl", 'chr12_12_57335', True)
+    correct_label("resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl", 'chr12_12_57335', True)
 
     # Note: this can also be used for adversial training: by purposefully setting the wrong label on a sample, overfitting can be avoided / detected.

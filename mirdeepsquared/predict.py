@@ -42,6 +42,15 @@ def predict_main(args):
 # List of supported model class names
 supported_classes = [MotifModel, BigModel, DensityMapModel, StructureModel, NumericalModel]
 
+val_bce_for_class = {'NumericalModel': 4.91,
+                     'MotifModel': 4.77,
+                     'StructureModel': 1.06,
+                     'DensityMapModel': 0.72,
+                     'BigModel': 0.17}
+# bce for ensemble: 0.12
+# TODO: convert these to weights
+# MotifModel, BigModel, DensityMapModel, StructureModel, NumericalModel]
+
 
 def map_filename_to_model(model_path):
     parts = os.path.basename(model_path).split('_')

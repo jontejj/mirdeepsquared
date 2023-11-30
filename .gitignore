@@ -12,3 +12,4 @@ resources/not_version_controlled/**
 mirdeepsquared.egg-info/**
 mirdeepsquared/mirdeepsquared.egg-info/**
 wrong_predictions/**
+resources/dataset/hard/**

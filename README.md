@@ -19,10 +19,9 @@ virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python3 -m pip install -e .
-python split_dataset.py resources/dataset/ resources/dataset/split
-cp resources/dataset/other_species/true_positives/mouse.mature.pkl resources/dataset/split/train/
-python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
-python mirdeepsquared/predict_cmd.py -m hyper-parameter-tuned-model.keras path/to/your_result.csv path/to/your/output.mrd
+./prepare_default_dataset.sh
+python mirdeepsquared/train.py resources/dataset/split/train -o models/
+python mirdeepsquared/predict_cmd.py path/to/your_result.csv path/to/your/output.mrd -m models/
 ```
 
 ### Installing on Uppmax
@@ -33,12 +32,11 @@ module load python3/3.9.5
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
-python split_dataset.py resources/dataset/ resources/dataset/split
-cp resources/dataset/other_species/true_positives/mouse.mature.pkl resources/dataset/split/train/
-python mirdeepsquared/train.py resources/dataset/split/train -o hyper-parameter-tuned-model.keras
+./prepare_default_dataset.sh
+python mirdeepsquared/train.py resources/dataset/split/train -o models/
 ```
 
-Then you can use ```python mirdeepsquared/predict_cmd.py your_result.csv your_output.mrd``` to get a list of the true positives
+Then you can use ```python mirdeepsquared/predict_cmd.py your_result.csv your_output.mrd -m models/``` to get a list of the true positives
 
 # How Mirdeepsquared was developed
 
@@ -105,9 +103,15 @@ By generating ```false_positives_with_empty_read_density_maps.pkl``` with ```gen
 
 By combining ```density_map_model.py```, ```motifs_bayes_model.py```, ```numerical_model.py```, ```structure_model.py``` and the big model trained (in ```train.py```) with ```mirdeepsquared/best-hyperparameters.yaml``` into an ensemble model, the accuracy on the holdout data increased to 96%.
 
-[dev.md](dev.md) was then used to release a mirdeepsquared package to https://pypi.org/.
+[release.sh](release.sh) was then used to release a mirdeepsquared package to https://pypi.org/.
 
-The most problematic samples were then collected into pdf:s by ```predictor.py``` for analysis by experts used to filter out false positives from miRdeep2. *TODO*: retrain after correcting invalid sample labels
+The most problematic samples were then collected into pdf:s by ```predictor.py``` for analysis by experts used to filter out false positives from miRdeep2.
+
+After analyzing the most problematic samples, some of the true positives were deemed not to actually be in mirgene db. It turned out that some of the known sequences matched a mature sequence in mirgene db but when the whole precursor was compared, there were differences.
+
+After making ```mirgene_db_filter.py``` more stringent, i.e instead of ```true_positives_TCGA_LUSC_only_in_mirgene_db.pkl```, ```true_positives_TCGA_LUSC_only_precursors_in_mirgene_db``` were generated and trained on instead. The accuracy, together with a new best-hyperparameters.yaml (based on the result of a half-finished grid search on uppmax), then increased to 99.4%.
+
+*TODO*: analyze the most problematic samples in the subset created with ```resources/dataset/hard/only_matching_mature_in_mirgene_db/generate-tricky.sh```, and incorporate the tricky cases into the training data once it's been correctly labeled.
 
 [i1]: https://github.com/jontejj/mirdeepsquared/issues/1
 
