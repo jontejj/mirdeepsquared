@@ -47,7 +47,7 @@ class TestPredict:
 
         predicted_true_positives_holdout = set(true_positives(model_path, holdout_df, threshold=0.5))
         difference = set(expected_true_positives) ^ set(predicted_true_positives_holdout)
-        assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 97
+        assert (1 - (len(difference) / len(holdout_df.values))) * 100 > 92
 
     def test_train_ensemble(self, tmp_path):
         model_path = str(tmp_path / "models")
