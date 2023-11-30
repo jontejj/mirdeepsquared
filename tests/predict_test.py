@@ -17,7 +17,7 @@ import pytest
 class TestPredict:
 
     @pytest.fixture(autouse=True, scope="class")
-    def prepare_dataset():
+    def prepare_dataset(cls):
         main_mirgene_filter("resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl", "resources/ALL-precursors_in_mirgene_db.fas", "resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl", stringent=True)
 
     def train(self, tmp_path):
