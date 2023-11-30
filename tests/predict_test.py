@@ -19,6 +19,7 @@ class TestPredict:
     @pytest.fixture(autouse=True, scope="class")
     def prepare_dataset(cls):
         main_mirgene_filter("resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl", "resources/ALL-precursors_in_mirgene_db.fas", "resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl", stringent=True)
+        main_mirgene_filter("resources/dataset/true_positives/true_positives_TCGA_BRCA.pkl", "resources/ALL-precursors_in_mirgene_db.fas", "resources/dataset/true_positives_TCGA_BRCA_only_precursors_in_mirgene_db.pkl", stringent=True)
 
     def train(self, tmp_path):
         models_path = tmp_path / "models"
@@ -40,7 +41,6 @@ class TestPredict:
 
         args = parse_args(["resources/false_positives/result_08_11_2023_t_19_35_00.csv", "resources/false_positives/08_11_2023_t_19_35_00_output.mrd", "-m", model_path])
         true_positives_in_seen_data = predict_main(args)
-        # TODO: improve!
         assert len(true_positives_in_seen_data) < 35
 
         expected_true_positives = set(holdout_df[(holdout_df['false_positive'] == False)]['location'])

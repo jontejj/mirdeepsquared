@@ -107,7 +107,7 @@ By combining ```density_map_model.py```, ```motifs_bayes_model.py```, ```numeric
 
 The most problematic samples were then collected into pdf:s by ```predictor.py``` for analysis by experts used to filter out false positives from miRdeep2.
 
-After analyzing the most problematic samples, some of the true positives were deemed not to actually be in mirgene db. It turned out that some of the known sequences matched a mature sequence in mirgene db but when the whole precursor was compared, there were differences.
+After analyzing the most problematic samples, some of the true positives were deemed not to actually be in mirgene db. It turned out that some of the known sequences matched a mature sequence in mirgene db but when the whole precursor was compared, there were differences. One possible explanation is that these could be pseudo genes that evolved from the functioning miRNA.
 
 After making ```mirgene_db_filter.py``` more stringent, i.e instead of ```true_positives_TCGA_LUSC_only_in_mirgene_db.pkl```, ```true_positives_TCGA_LUSC_only_precursors_in_mirgene_db``` were generated and trained on instead. The accuracy, together with a new best-hyperparameters.yaml (based on the result of a half-finished grid search on uppmax), then increased to 99.4%.
 

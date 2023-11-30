@@ -4,8 +4,8 @@ from mirdeepsquared.mirgene_db_filter import filter_out_sequences_not_in_mirgene
 
 class TestMirgeneDbFilter:
     def test_mirgene_db_filter(self):
-        args = parse_args(["resources/result_30_10_2023_t_15_05_15.csv", "resources/output.mrd", "not_used.pkl", "-fp"])
+        args = parse_args(["tests/example_mirdeep_output/result_30_10_2023_t_15_05_15.csv", "tests/example_mirdeep_output/output.mrd", "not_used.pkl", "-fp"])
         df = extract_features_main(args)
-        df = filter_out_sequences_not_in_mirgene_db(df, "tests/mirgene_db_example.txt")
+        df = filter_out_sequences_not_in_mirgene_db(df, "tests/mirgene_db_example.txt", stringent=False)
         assert len(df.loc[(df['location'] == 'chrII:11534525-11540624_7')]) == 1
         assert len(df) == 1

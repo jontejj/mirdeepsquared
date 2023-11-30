@@ -6,7 +6,7 @@ import pandas as pd
 class TestCorrectInvalidLabel:
     def test_correct_invalid_label(self, tmp_path):
         tmp_pickle_file = str(tmp_path / "tmp_pickle_file.pkl")
-        args = parse_args(["resources/result_30_10_2023_t_15_05_15.csv", "resources/output.mrd", "not_used.pkl", "-tp", "--section", "known"])
+        args = parse_args(["tests/example_mirdeep_output/result_30_10_2023_t_15_05_15.csv", "tests/example_mirdeep_output/output.mrd", "not_used.pkl", "-tp", "--section", "known"])
         df = extract_features_main(args)
         df.to_pickle(tmp_pickle_file)
         correct_label(tmp_pickle_file, "chrII:11534525-11540624_11", True)
