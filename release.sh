@@ -2,7 +2,9 @@
 
 # Procedure for releasing a new version of mirdeepsquared.
 # Note: remember to first bump the version in setup.py!
-set -e
+
+set -euxo pipefail
+
 rm -rf ~/.virtualenvs/mirdeepsquared-rel
 virtualenv ~/.virtualenvs/mirdeepsquared-rel -p python3.9
 source ~/.virtualenvs/mirdeepsquared-rel/bin/activate

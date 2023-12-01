@@ -2,7 +2,7 @@
 # Note that this script is not supposed to be run on any other computer than jontejj's
 # as it depends on large output.mrd files not version controlled.
 # It's only included to show the general idea of how the dataset .pkl files were created
-set -e
+set -euxo pipefail
 
 python mirdeepsquared/extract_features.py /Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/result_19_01_2023_t_23_35_49.csv /Volumes/Mac/Users/jonatanjoensson/school/molecular-biology/mirdeep2-data/TCGA-LUSC/output.mrd resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl -tp --section known
 python mirdeepsquared/mirgene_db_filter.py resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl resources/ALL-precursors_in_mirgene_db.fas resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl --stringent

@@ -136,7 +136,7 @@ setup(
     # projects.
     extras_require={  # Optional
         #    "dev": ["check-manifest"],
-        "test": ["pytest"],
+        "test": ["pytest", "coverage"],
     },
     # If there are data files included in your packages that need to be
     # installed, specify them here.
