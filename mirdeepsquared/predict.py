@@ -30,7 +30,7 @@ def predict_main(args):
 
     # X = np.asarray(novel_slice['read_density_map_percentage_change'].values.tolist())
 
-    return true_positives(args.models, novel_slice, args.threshold, model_weights)
+    return true_positives(args.models, novel_slice, model_weights, args.threshold)
     """
     mature_slice = df.loc[df['predicted_as_novel'] == False]
     if len(mature_slice) > 0:
@@ -63,7 +63,7 @@ def map_filename_to_model(model_path):
     raise ValueError(f'Unknown model type based on path: {model_path}, make sure you only have models in the model path provided')
 
 
-def true_positives(model_path, df, threshold, model_weights):
+def true_positives(model_path, df, model_weights, threshold):
     ensemble_predictions = predict(model_path, df, model_weights)
 
     # Convert the averaged predictions to binary predictions (0 or 1)
