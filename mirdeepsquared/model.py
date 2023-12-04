@@ -38,11 +38,6 @@ class MirdeepSquaredModel(ABC):
         """Predicts the probability that the input samples are false positives"""
         pass
 
-    @abstractmethod
-    def weight(self):
-        """A relative weight, compared to the other models, used to make predictions from better models matter more"""
-        pass
-
 
 class KerasModel(MirdeepSquaredModel):
     def __init__(self, model=None):

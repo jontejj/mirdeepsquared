@@ -141,7 +141,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={  # Optional
-        "mirdeepsquared": ['models/*', "default-hyperparameters.yaml", "best-hyperparameters.yaml"],
+        "mirdeepsquared": ['models/*', "default-hyperparameters.yaml", "best-hyperparameters.yaml", "model_weights.yaml"],
     },
     include_package_data=True,
     # Entry points. The following would provide a command called `sample` which

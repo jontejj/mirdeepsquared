@@ -9,7 +9,7 @@ def correct_label(file, location, correct_label):
 
 
 if __name__ == '__main__':
-    # chr1_1_1315 was reported as a true positive by a good model and it turned out to actually be a true positive
+    # chr1_1_1315 was reported as a true positive by a good model and it turned out to actually be a true positive?
     correct_label("resources/dataset/false_positives_SRR2496781-84_bigger.pkl", 'chr1_1_1315', False)
     # TODO: Is chr3_3_3199 (https://drive.google.com/file/d/1NHVvLKS6NTbdNszBcjoMbW473oC_s_JJ/view?usp=drive_link) a true positive?
     # chr12_12_57335 exists in mirgene db (hsa-mir-6502) but is not a true positive in the TCGA_LUSC datafile.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euxo pipefail
 
 python mirdeepsquared/mirgene_db_filter.py resources/dataset/true_positives/true_positives_TCGA_LUSC_all.pkl resources/ALL-precursors_in_mirgene_db.fas resources/dataset/true_positives_TCGA_LUSC_only_precursors_in_mirgene_db.pkl --stringent
 python mirdeepsquared/mirgene_db_filter.py resources/dataset/true_positives/true_positives_TCGA_BRCA.pkl resources/ALL-precursors_in_mirgene_db.fas resources/dataset/true_positives_TCGA_BRCA_only_precursors_in_mirgene_db.pkl --stringent

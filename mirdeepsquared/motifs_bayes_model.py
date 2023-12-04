@@ -28,7 +28,3 @@ class MotifModel(MirdeepSquaredModel):
     def predict(self, X):
         # Only return the false positive probability
         return np.asarray([x[1] for x in self.model.predict_proba(X)])
-
-    # Binary crossentropy (on val): Structure: 2.5, Numericals: 3.8, density map: 0.55834, motifs: 5.98, Ensemble: 0.5587
-    def weight(self):
-        return 2

@@ -38,6 +38,3 @@ class StructureModel(KerasModel):
 
         history = self.model.fit(X_train, Y_train, epochs=200, batch_size=16, validation_data=(X_val, Y_val), callbacks=[early_stopping])
         print(history.history)
-
-    def weight(self):
-        return 5

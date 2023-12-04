@@ -38,9 +38,6 @@ class BigModel(KerasModel):
         # TODO: Right now this is not used, but it should be so that other models also can be cross-validated / tuned / etc
         pass
 
-    def weight(self):
-        return 25
-
 
 def get_model(consensus_sequences, density_maps, numeric_features, model_size=64, initial_learning_rate=0.0003, regularize=True, dropout_rate=0.8, weight_constraint=3.0):
     max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)

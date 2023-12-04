@@ -69,5 +69,3 @@ class DensityMapModel(KerasModel):
         print("Max validation accuracy: " + str(max(history.history['val_accuracy'])))
         print("Max validation F1-score: " + str(max(history.history['val_f1_score'])))
 
-    def weight(self):
-        return 23
