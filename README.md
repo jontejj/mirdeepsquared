@@ -6,15 +6,15 @@ Mirdeepsquared uses a deep learning model that predicts if novel miRNA sequences
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
 pip install mirdeepsquared
-predict path/to/your_result.csv path/to/your_output.mrd
+mirdeepsquared path/to/your_result.csv path/to/your_output.mrd
 ```
 
 The output are your true positives, i.e highly likely to actually be novel miRNA:s.
 
 Another way to use mirdeepsquared is to create a filtered result.html file:
 ```
-predict path/to/your_result.csv path/to/your_output.mrd > tp.txt
-python mirdeepsquared/mod_html.py path/to/your_result.html path/to/filtered_results.html -- tp.txt
+mirdeepsquared path/to/your_result.csv path/to/your_output.mrd > tp.txt
+mod-html path/to/your_result.html path/to/filtered_results.html -- tp.txt
 ```
 
 ## Installing (from source)

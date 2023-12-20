@@ -1,12 +1,12 @@
 from pathlib import Path
 from mirdeepsquared.train_ensemble import train_ensemble
-from mirdeepsquared.common import KMER_SIZE, NUCLEOTIDE_NR, list_of_pickle_files_in, prepare_data, read_dataframes, Y_values
+from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, read_dataframes, Y_values
 from mirdeepsquared.model import KerasModel
 
 import numpy as np
 
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
-from keras.layers import Input, Embedding, Flatten, Dense, TextVectorization, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
+from keras.layers import Input, Embedding, Flatten, Dense, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
 from keras.constraints import MaxNorm
 from keras.models import Model
 from keras.optimizers import Adam
@@ -32,33 +32,20 @@ class BigModel(KerasModel):
 
     def features_used(self):
         # TODO: test with encoded precursor instead of pri_seq_encoded
-        return ['consensus_sequence_as_sentence', 'location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'pri_seq_encoded']
+        return ['location_of_mature_star_and_hairpin', 'read_density_map_percentage_change', 'structure_as_1D_array', 'combined_numerics', 'pri_seq_encoded']
 
     def train(self, train, val):
         # TODO: Right now this is not used, but it should be so that other models also can be cross-validated / tuned / etc
         pass
 
 
-def get_model(consensus_sequences, density_maps, numeric_features, model_size=64, initial_learning_rate=0.0003, regularize=True, dropout_rate=0.8, weight_constraint=3.0):
-    max_features = pow(NUCLEOTIDE_NR, KMER_SIZE)
-    seq_length = len(max(consensus_sequences, key=len))
-
-    # Input 1 - consensus_sequence
-    # TODO: remove? It has some importance according to feature_importance.py, is it ruining generalization?
-    input_layer_consensus_sequence = Input(shape=(1,), dtype='string', name='consensus_sequence')
-    vectorize_layer = TextVectorization(output_mode="int", input_shape=(1,))
-    vectorized_layer = vectorize_layer(input_layer_consensus_sequence)
-    vectorize_layer.adapt(consensus_sequences)
-    embedding_layer = Embedding(input_dim=max_features, output_dim=model_size, input_length=seq_length)(vectorized_layer)
-    conv1d_layer = Conv1D(filters=model_size, kernel_size=3, activation='relu')(embedding_layer)
-    consensus_maxpooling_layer = GlobalMaxPooling1D()(conv1d_layer)
+def get_model(density_maps, numeric_features, model_size=64, initial_learning_rate=0.0003, regularize=True, dropout_rate=0.8, weight_constraint=3.0):
 
     # batch_norm_layer = BatchNormalization(trainable=True)(maxpooling_layer) #TODO: remember to set trainable=False when inferring
-
-    # Input 2 - Location of mature, star and hairpin sequences
+    # Input 1 - Location of mature, star and hairpin sequences
     input_location_of_mature_star_and_hairpin = Input(shape=(111, 4), dtype='float32', name='location_of_mature_star_and_hairpin')
 
-    # Input 3 - density maps
+    # Input 2 - density maps
     input_layer_density_map = Input(shape=(111,), dtype='int32', name='density_map_rate_of_change')
     density_map_normalizer_layer = Normalization(mean=np.mean(density_maps, axis=0), variance=np.var(density_maps, axis=0))(input_layer_density_map)
 
@@ -69,26 +56,26 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
 
     density_map_dense = Dense(model_size * 32, activation='relu')(flatten_layer_2_3)
 
-    # Input 4 - structural information
+    # Input 3 - structural information
     input_structure_as_matrix = Input(shape=(111,), dtype='float32', name='structure_as_1D_array')
     structure_embedding = Embedding(input_dim=17, output_dim=(128), input_length=111, mask_zero=True)(input_structure_as_matrix)
     bidirectional_lstm = Bidirectional(LSTM(128))(structure_embedding)
     structure_dense = Dense(model_size * 32, activation='relu')(bidirectional_lstm)
 
-    # Input 5 - numerical features
+    # Input 4 - numerical features
     input_layer_numeric_features = Input(shape=(4,), dtype='float32', name='numeric_features')
     normalizer_layer = Normalization()
     normalizer_layer.adapt(numeric_features)
     numeric_features_dense = Dense(model_size * 4, activation='relu')(normalizer_layer(input_layer_numeric_features))
 
-    # Input 6 - precursor sequence
+    # Input 5 - precursor sequence
     input_precursor = Input(shape=(111, 5), dtype='float32', name='precursor')
     precursor_conv1d_k3 = Conv1D(filters=64, kernel_size=3, activation='relu')(input_precursor)  # 64 filters -> 0.872, 128 -> 0.848
     precursor_conv1d_k5 = Conv1D(filters=64, kernel_size=5, activation='relu')(input_precursor)
     precursor_concatenated = Concatenate(axis=1)([precursor_conv1d_k5, precursor_conv1d_k3])
     precursor_maxpooling_layer = GlobalMaxPooling1D()(precursor_concatenated)
 
-    concatenated = Concatenate()([consensus_maxpooling_layer, density_map_dense, numeric_features_dense, structure_dense, precursor_maxpooling_layer])
+    concatenated = Concatenate()([density_map_dense, numeric_features_dense, structure_dense, precursor_maxpooling_layer])
     dropout_layer = Dropout(dropout_rate, input_shape=(model_size,))(concatenated)
 
     # TODO: remove regularization on output_layer?
@@ -106,7 +93,7 @@ def get_model(consensus_sequences, density_maps, numeric_features, model_size=64
     # concatenated_with_motif_input = Concatenate()([batch_norm, input_motifs])
     # output_layer = Dense(1, activation='sigmoid', kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(concatenated_with_motif_input)
     # , input_motifs
-    model = Model(inputs=[input_layer_consensus_sequence, input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features, input_precursor], outputs=output_layer)
+    model = Model(inputs=[input_location_of_mature_star_and_hairpin, input_layer_density_map, input_structure_as_matrix, input_layer_numeric_features, input_precursor], outputs=output_layer)
 
     lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
     model.compile(optimizer=Adam(learning_rate=lr_schedule), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
@@ -224,7 +211,7 @@ def train_parameter(parameter, cross_validation_folds, train_results_file, model
         class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
         class_weights_dict = dict(enumerate(class_weights))
 
-        model = get_model(consensus_sequences=X_train[0], density_maps=X_train[2], numeric_features=X_train[4], model_size=parameter['model_size'], initial_learning_rate=parameter['learning_rate'], regularize=parameter['regularize'], dropout_rate=parameter['dropout_rate'], weight_constraint=parameter['weight_constraint'])
+        model = get_model(density_maps=X_train[1], numeric_features=X_train[3], model_size=parameter['model_size'], initial_learning_rate=parameter['learning_rate'], regularize=parameter['regularize'], dropout_rate=parameter['dropout_rate'], weight_constraint=parameter['weight_constraint'])
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', patience=10, start_from_epoch=4, restore_best_weights=True, verbose=1)
 
         history = model.fit(X_train, Y_train, epochs=parameter['epochs'], batch_size=parameter['batch_size'], class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping])  # verbose=0

@@ -63,6 +63,7 @@ class DensityMapModel(KerasModel):
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
         class_weights = compute_class_weight('balanced', classes=np.unique(Y_train), y=Y_train)
         class_weights_dict = dict(enumerate(class_weights))
+        # TODO: add config for only running 8 epochs as that's the best amount right now?
         history = self.model.fit(X_train, Y_train, epochs=200, batch_size=16, class_weight=class_weights_dict, validation_data=(X_val, Y_val), callbacks=[early_stopping])  # verbose=0
         print(history.history)
         print("Max train accuracy: " + str(max(history.history['accuracy'])))

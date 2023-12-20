@@ -42,6 +42,8 @@ def process_mrd_file(mrd_filepath):
             read_sequence = match_for_read.group(3)
             i = 0
             for c in read_sequence[:112]:  # Truncate at 112
+                # TODO: how should capital letters be handled? lowercase letters might be used to denote low-confidence?
+                # Should high confidence count as twice the amount of reads?
                 if c != '.':
                     read_density_map[i] += repeated_count
                 i += 1

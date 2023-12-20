@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from mirdeepsquared.estimation_model import EstimationModel
 from mirdeepsquared.extract_features import extract_features
 from mirdeepsquared.common import files_in, prepare_data, locations_in
 from mirdeepsquared.motifs_bayes_model import MotifModel
@@ -10,6 +11,7 @@ from mirdeepsquared.numerical_model import NumericalModel
 from mirdeepsquared.structure_model import StructureModel
 import numpy as np
 import yaml
+
 
 def cut_off(pred, threshold):
     # y_predicted = np.round(pred) (default)
@@ -40,13 +42,16 @@ def predict_main(args):
         [print(location) for location, pred in zip(mature_slice['location'], pred) if pred == True]
     """
 
+
 def model_weights_from_file(model_weight_file):
     with open(model_weight_file, 'r') as file:
         model_weights = yaml.safe_load(file)
     return model_weights
 
+
 # List of supported model class names
-supported_classes = [MotifModel, BigModel, DensityMapModel, StructureModel, NumericalModel]
+supported_classes = [MotifModel, BigModel, DensityMapModel, StructureModel, NumericalModel, EstimationModel]
+
 
 def map_filename_to_model(model_path):
     parts = os.path.basename(model_path).split('_')

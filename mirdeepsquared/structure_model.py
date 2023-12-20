@@ -35,6 +35,6 @@ class StructureModel(KerasModel):
         self.model.compile(optimizer=Adam(learning_rate=0.0003), loss='binary_crossentropy', metrics=['accuracy', F1Score(average='weighted', threshold=0.5, name='f1_score')])
         self.model.summary()
         early_stopping = EarlyStopping(monitor='val_f1_score', mode='max', min_delta=0.00001, patience=20, start_from_epoch=4, restore_best_weights=True, verbose=1)
-
+        # TODO: add config for only running 77 epochs as that's the best amount right now?
         history = self.model.fit(X_train, Y_train, epochs=200, batch_size=16, validation_data=(X_val, Y_val), callbacks=[early_stopping])
         print(history.history)

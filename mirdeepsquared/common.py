@@ -9,20 +9,8 @@ import re
 from os import listdir
 from os.path import isfile, join
 
-KMER_SIZE = 6
 NUCLEOTIDE_NR = 5  # U C A G D (D for Dummy)
 EPSILON = 1e-7
-
-
-def build_kmers(sequence, ksize):
-    kmers = []
-    n_kmers = len(sequence) - ksize + 1
-
-    for i in range(n_kmers):
-        kmer = sequence[i:i + ksize]
-        kmers.append(kmer)
-
-    return kmers
 
 
 def build_structure_1D(pri_struct, exp):
@@ -153,9 +141,6 @@ def one_hot_encode(categorical_features, nr_of_categories):
 
 
 def prepare_data(df):
-    # From https://github.com/dhanush77777/DNA-sequencing-using-NLP/blob/master/DNA%20sequencing.ipynb
-    df['consensus_sequence_kmers'] = df.apply(lambda x: build_kmers(x['consensus_sequence'], KMER_SIZE), axis=1)
-    df['consensus_sequence_as_sentence'] = df.apply(lambda x: ' '.join(x['consensus_sequence_kmers']), axis=1)
     # TODO: create other features for mature vs star, such as:
     # feature_difference = feature1 - feature2
     # feature_interaction = feature1 * feature2
@@ -177,25 +162,17 @@ def prepare_data(df):
     return df
 
 
-def split_data_once(df, fraction=0.8):
-    train = df.sample(frac=fraction, random_state=42)
+def split_data_once(df, fraction=0.8, random_state=42):
+    train = df.sample(frac=fraction, random_state=random_state)
     holdout = df.drop(train.index)
     return (train, holdout)
 
 
-def split_data_twice(df, first_fraction=0.6, second_fraction=0.5):
-    train = df.sample(frac=first_fraction, random_state=42)
-    tmp = df.drop(train.index)
-    val = tmp.sample(frac=second_fraction, random_state=42)
-    test = tmp.drop(val.index)
-    return (train, val, test)
-
-
-def split_into_different_files(path_to_pickle_files, pickle_output_path, fraction):
+def split_into_different_files(path_to_pickle_files, pickle_output_path, fraction, random_state):
     list_of_files = list_of_pickle_files_in(path_to_pickle_files)
-    print("Splitting " + str([os.path.basename(path) for path in list_of_files]) + " with fraction " + str(fraction))
+    print("Splitting " + str([os.path.basename(path) for path in list_of_files]) + " with fraction " + str(fraction) + " and random state " + str(random_state))
     df = read_dataframes(list_of_files)
-    train, holdout = split_data_once(df, fraction=fraction)
+    train, holdout = split_data_once(df, fraction=fraction, random_state=random_state)
     print("False positives in train:" + str(len(train[(train['false_positive'] == True)])))
     print("True positives in train:" + str(len(train[(train['false_positive'] == False)])))
     save_dataframe_to_pickle(train, pickle_output_path + "/train/train.pkl")

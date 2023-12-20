@@ -31,7 +31,7 @@ class TestPredict:
         model_path = str(models_path / "BigModel_testpredict.keras")
         train_results_file = str(tmp_path / "train_results_tmp.csv")
         split_main_path = str(tmp_path / "split-data")
-        split_into_different_files("resources/dataset", split_main_path, 0.8)
+        split_into_different_files("resources/dataset", split_main_path, 0.8, 42)
         train_main(split_main_path + "/train", model_path, "tests/two-hyperparameters.yaml", train_results_file, parallelism=min([multiprocessing.cpu_count() - 1, 1]))
         return model_path
 
@@ -56,7 +56,7 @@ class TestPredict:
     def test_train_ensemble(self, tmp_path, model_weights):
         model_path = str(tmp_path / "models")
         split_main_path = str(tmp_path / "split-data")
-        split_into_different_files("resources/dataset", split_main_path, 0.8)
+        split_into_different_files("resources/dataset", split_main_path, 0.8, 42)
         train_ensemble(split_main_path + "/train", model_path)
 
         holdout_df = prepare_data(read_dataframes(list_of_pickle_files_in(split_main_path + "/holdout")))

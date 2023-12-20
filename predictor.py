@@ -78,7 +78,7 @@ def output_pdf(location, source_pickle, pdf_path, actual_label):
 
 
 if __name__ == '__main__':
-    #args = parse_args(["resources/dataset/split/holdout", "models3/", "-t", "0.5"])
+    # args = parse_args(['resources/dataset/split-5/holdout/', 'models15/'])
     args = parse_args(sys.argv[1:])
     path = args.dataset
     list_of_files = list_of_pickle_files_in(path)

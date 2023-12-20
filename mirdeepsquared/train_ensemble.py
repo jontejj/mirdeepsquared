@@ -8,6 +8,7 @@ from mirdeepsquared.motifs_bayes_model import MotifModel
 from mirdeepsquared.density_map_model import DensityMapModel
 from mirdeepsquared.numerical_model import NumericalModel
 from mirdeepsquared.structure_model import StructureModel
+from mirdeepsquared.estimation_model import EstimationModel
 from mirdeepsquared.common import list_of_pickle_files_in, prepare_data, read_dataframes, split_data_once
 
 
@@ -27,6 +28,10 @@ def train_ensemble(dataset_path, model_output_path):
     motifs.train(train_no_generated, val)
     motifs.save(model_output_dir / "MotifModel_motifs.pkl")
 
+    estimation_model = EstimationModel()
+    estimation_model.train(train_no_generated, val)
+    estimation_model.save(model_output_dir / "EstimationModel_model.pkl")
+
     density_map_model = DensityMapModel()
     density_map_model.train(train, val)
     density_map_model.save(model_output_dir / "DensityMapModel_with_location_of_mature_star_and_hairpin.keras")
@@ -38,4 +43,3 @@ def train_ensemble(dataset_path, model_output_path):
     numerical_model = NumericalModel()
     numerical_model.train(train, val)
     numerical_model.save(model_output_dir / "NumericalModel_simple.keras")
-

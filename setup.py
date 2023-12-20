@@ -148,9 +148,8 @@ setup(
     # executes the function `main` from this package when invoked:
     entry_points={  # Optional
         "console_scripts": [
-            "predict=mirdeepsquared.predict_cmd:main",
-            "extract-features=mirdeepsquared.extract_features:main",
-            "train=mirdeepsquared.train:main",
+            "mirdeepsquared=mirdeepsquared.predict_cmd:main",
+            "mod-html=mirdeepsquared.mod_html:main"
         ],
     },
     # List additional URLs that are relevant to your project as a dict.

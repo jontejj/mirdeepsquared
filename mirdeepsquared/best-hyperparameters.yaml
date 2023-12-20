@@ -1,3 +1,6 @@
+# Based on the run with best mean_max_val_f1_score from a half-finished hyperparameter search performed on uppmax.
+# Results documented in "after-crossval" at https://docs.google.com/spreadsheets/d/1AUevU490uAoViKpRj9COnk-Dck__0yfknEwewiYqAHc/edit#gid=1721332934
+# TODO: run a new tuning after tricky cases have been added to the training set
 batch_sizes : [64]
 nr_of_epochs : [9]
 model_sizes : [32]

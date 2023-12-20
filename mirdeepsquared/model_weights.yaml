@@ -1,6 +1,7 @@
-# binary cross-entropy on val: StructureModel: 2.5, NumericalModel: 3.8, DensityMapModel: 0.55834, MotifModel: 5.98, Ensemble: 0.5587
-NumericalModel: 2.59
+# binary cross-entropy on val: StructureModel: 2.5, NumericalModel: 3.8, DensityMapModel: 0.55834, MotifModel: 5.98, EstimationModel: 1.43209, Ensemble: 0.5587
+NumericalModel: 3
 MotifModel: 2
 StructureModel: 5
 DensityMapModel: 23
 BigModel: 25
+EstimationModel: 10
