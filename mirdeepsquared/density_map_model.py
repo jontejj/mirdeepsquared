@@ -1,7 +1,7 @@
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Flatten, Dense, Concatenate, Normalization, Reshape
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers.legacy import Adam
 from keras.callbacks import EarlyStopping
 from keras.metrics import F1Score
 from mirdeepsquared.common import Y_values

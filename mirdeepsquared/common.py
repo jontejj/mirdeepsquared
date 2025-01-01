@@ -167,7 +167,8 @@ def prepare_data(df):
     df['motifs'] = df.apply(lambda x: find_motifs(x['exp'], x['pri_seq']), axis=1)
     df['has_all_motifs'] = df.apply(lambda x: (x['motifs'] == [1, 1, 1]), axis=1)
     df['loop_length'] = df.apply(lambda x: loop_length(x['exp']), axis=1)
-    df['combined_numerics'] = df[['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio', 'loop_length']].apply(lambda row: row.tolist(), axis=1)
+    # TODO: add , 'loop_length'
+    df['combined_numerics'] = df[['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']].apply(lambda row: row.tolist(), axis=1)
     window_size = 5
     df['read_density_map_moving_average'] = df.apply(lambda x: np.convolve(x['read_density_map_percentage_change'], np.ones(window_size) / window_size, mode='same'), axis=1)
     return df

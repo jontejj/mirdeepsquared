@@ -1,7 +1,7 @@
 from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Dense, Normalization
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers.legacy import Adam
 from keras.callbacks import EarlyStopping
 from mirdeepsquared.common import Y_values
 from mirdeepsquared.model import KerasModel
@@ -18,7 +18,7 @@ class NumericalModel(KerasModel):
         X_val = self.X(val)
         Y_val = Y_values(val)
 
-        input = Input(shape=(5,), dtype='float32')
+        input = Input(shape=(4,), dtype='float32')
         normalizer_layer = Normalization()
         normalizer_layer.adapt(X_train)
         numeric_features_dense = Dense(8, activation='relu')(normalizer_layer(input))

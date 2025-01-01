@@ -9,7 +9,8 @@ from keras.initializers import HeNormal, GlorotNormal, RandomNormal
 from keras.layers import Input, Embedding, Flatten, Dense, Conv1D, GlobalMaxPooling1D, Concatenate, Normalization, Reshape, Dropout, LSTM, Bidirectional
 from keras.constraints import MaxNorm
 from keras.models import Model
-from keras.optimizers import Adam
+# legacy Adam works better on M1/M2 Macs
+from keras.optimizers.legacy import Adam
 from keras.optimizers.schedules import ExponentialDecay
 from keras.metrics import F1Score
 from keras.callbacks import EarlyStopping
@@ -63,10 +64,10 @@ def get_model(density_maps, numeric_features, model_size=64, initial_learning_ra
     structure_dense = Dense(model_size * 32, activation='relu')(bidirectional_lstm)
 
     # Input 4 - numerical features
-    input_layer_numeric_features = Input(shape=(5,), dtype='float32', name='numeric_features')
+    input_layer_numeric_features = Input(shape=(4,), dtype='float32', name='numeric_features')
     normalizer_layer = Normalization()
     normalizer_layer.adapt(numeric_features)
-    numeric_features_dense = Dense(model_size * 5, activation='relu')(normalizer_layer(input_layer_numeric_features))
+    numeric_features_dense = Dense(model_size * 4, activation='relu')(normalizer_layer(input_layer_numeric_features))
 
     # Input 5 - precursor sequence
     input_precursor = Input(shape=(111, 5), dtype='float32', name='precursor')
