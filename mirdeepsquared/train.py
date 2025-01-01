@@ -11,6 +11,7 @@ from keras.constraints import MaxNorm
 from keras.models import Model
 # legacy Adam works better on M1/M2 Macs
 from keras.optimizers.legacy import Adam
+from keras.optimizers import Adam
 from keras.optimizers.schedules import ExponentialDecay
 from keras.metrics import F1Score
 from keras.callbacks import EarlyStopping

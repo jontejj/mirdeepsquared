@@ -47,20 +47,14 @@ Verify that arm64 / arm64e is output when running:
 /opt/homebrew/bin/python3.9 -c "import platform; print(platform.machine())"
 ```
 
-## Create a virtual environment
+## Installing (from source)
 In order not to clutter your global python install, it's better to use a virtual environment:
-Use python 3.9 as tensorflow requires it
-If homebrew was used to install python 3.9 use:
-```
-/opt/homebrew/bin/python3.9 -m venv "mirdeepsquared-env"
-```
-Otherwise you can use:
+Use python 3.9 as tensorflow requires it.
+If homebrew was used to install python 3.9 make sure that:
+/opt/homebrew/bin/python3.9 is the python version used.
+
 ```
 virtualenv mirdeepsquared-env -p python3.9
-```
-
-## Installing (from source)
-```
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python3 -m pip install -e .
