@@ -125,7 +125,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=["tensorflow>=2.14,<2.15", "screed", "pandas", "scikit-learn", "pyyaml"],  # Optional
+    install_requires=["tensorflow>=2.14,<2.15", "tensorflow-metal>=1.0; platform_system == 'Darwin'; platform_machine=='arm64'", "screed", "pandas", "scikit-learn", "pyyaml", "beautifulsoup4"],  # Optional
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
