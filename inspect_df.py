@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from mirdeepsquared.common import prepare_data
 
+import ViennaRNA
 
 def inspect(file, entry):
     df = pd.read_pickle(file)
@@ -25,6 +26,11 @@ def parse_args(args):
 
 
 if __name__ == '__main__':
+    seq = "AGACGACAAGGUUGAAUCGCACCCACAGUCUAUGAGUCGGUG"
+    fc = ViennaRNA.fold_compound(seq)
+    (ss, mfe) = fc.mfe()  # maximum -15 kcal/mol free energy (Brameier & Wiuf, 2007)
+    print(f"{seq}\n{ss} ({mfe:6.2f})")
+
     args = parse_args(sys.argv[1:])
     # args = parse_args(['resources/dataset/other_species/true_positives/zebrafish/zebrafish.mature.2nd.run.pkl', 'AAA'])
     if hasattr(args, 'entry'):
@@ -33,3 +39,4 @@ if __name__ == '__main__':
         df = pd.read_pickle(args.dataset)
         for location in df['location'].values:
             print(location)
+

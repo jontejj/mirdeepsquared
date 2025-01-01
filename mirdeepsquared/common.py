@@ -106,6 +106,10 @@ def one_hot_encode_sequence(sequence, max_length=111):
     return one_hot_encoded
 
 
+def loop_length(exp):
+    return exp.count('l')
+
+
 def find_motifs(exp, pri_seq):
     """
     From https://mirgenedb.org/information:
@@ -132,6 +136,10 @@ def find_motifs(exp, pri_seq):
     has_ugu_motif = (ugu_motif == 'ugu' or ugu_motif == 'gug')  # reverse complement of ugu
     has_cnnc_motif = re.search(r"[ucag]*c[ucag][ucag]c[ucag]*", cnnc_motif_range) is not None
     # TODO: mismatched GHG (mGHG) where H is either a, c or u?
+    # From https://doi.org/10.1016/j.celrep.2021.110015:
+    # the GHG motif, defined as an unmatched nucleotide other than guanosine
+    # that is flanked by two base-paired guanosines at position −7 to −5 relative to the Drosha cleavage site,
+    # can facilitate miRNA precursor processing efficiency and precision
     return [int(has_ug_motif), int(has_ugu_motif), int(has_cnnc_motif)]
 
 
@@ -141,6 +149,9 @@ def one_hot_encode(categorical_features, nr_of_categories):
 
 
 def prepare_data(df):
+    # TODO: At least 16-nt complementarity between the two arm sequences. (Fromm 2015) (14 according to Hackenberg 2009)
+    # TODO: The loop sequence is at least 8 nt in length (Fromm 2015)
+    # TODO: Perfect seed pairing: Conserved Watson–Crick pairing to the 5′ region of the miRNA centered on nucleotides 2–7, which is called the miRNA “seed”, markedly reduces the occurrence of false-positive predictions (https://www-sciencedirect-com.ezp.sub.su.se/science/article/pii/S0092867409000087?via%3Dihub#bib60)
     # TODO: create other features for mature vs star, such as:
     # feature_difference = feature1 - feature2
     # feature_interaction = feature1 * feature2
@@ -155,8 +166,8 @@ def prepare_data(df):
     # df['motifs_one_hot_encoded'] = df.apply(lambda x: one_hot_encode(find_motifs(x['exp'], x['pri_seq']), 2), axis=1)
     df['motifs'] = df.apply(lambda x: find_motifs(x['exp'], x['pri_seq']), axis=1)
     df['has_all_motifs'] = df.apply(lambda x: (x['motifs'] == [1, 1, 1]), axis=1)
-
-    df['combined_numerics'] = df[['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio']].apply(lambda row: row.tolist(), axis=1)
+    df['loop_length'] = df.apply(lambda x: loop_length(x['exp']), axis=1)
+    df['combined_numerics'] = df[['mature_read_count', 'star_read_count', 'significant_randfold', 'mature_vs_star_read_ratio', 'loop_length']].apply(lambda row: row.tolist(), axis=1)
     window_size = 5
     df['read_density_map_moving_average'] = df.apply(lambda x: np.convolve(x['read_density_map_percentage_change'], np.ones(window_size) / window_size, mode='same'), axis=1)
     return df

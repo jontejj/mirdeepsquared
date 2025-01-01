@@ -4,7 +4,7 @@
 # Mirdeepsquared
 Mirdeepsquared uses a deep learning model that predicts if novel miRNA sequences in the output of [miRDeep2](https://github.com/rajewsky-lab/mirdeep2) are false positives or not. This greatly reduces the amount of manual work that is currently needed to filter out the false positives.
 
-## Usage (with pip install)
+## Simple usage (with pip install)
 ```
 virtualenv mirdeepsquared-env -p python3.9
 source mirdeepsquared-env/bin/activate
@@ -20,11 +20,47 @@ mirdeepsquared path/to/your_result.csv path/to/your_output.mrd > tp.txt
 mod-html path/to/your_result.html path/to/filtered_results.html -- tp.txt
 ```
 
-## Installing (from source)
-Use python 3.9 as tensorflow requires it
+## Prerequiste for installing on Apple Silicone (M-processors)
 
+The first step is to make sure that the python 3.9 version was built for the arm architecture.
+```
+python3.9 -c "import platform; print(platform.machine())"
+```
+
+If this prints x86_64, python3.9 points to python with the wrong architecture. In order to fix this you can first change the default shell to Z shell (/bin/zsh):
+```
+chsh -s /bin/zsh
+```
+
+Then start a new terminal and make sure that zsh is used and not bash for example. Then install homebrew for the right architecture:
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+Also make sure to run the commands at the end of the output to add Homebrew to your PATH.
+
+Then run:
+```
+brew install python@3.9
+```
+Verify that arm64 / arm64e is output when running:
+```
+/opt/homebrew/bin/python3.9 -c "import platform; print(platform.machine())"
+```
+
+## Create a virtual environment
+In order not to clutter your global python install, it's better to use a virtual environment:
+Use python 3.9 as tensorflow requires it
+If homebrew was used to install python 3.9 use:
+```
+/opt/homebrew/bin/python3.9 -m venv "mirdeepsquared-env"
+```
+Otherwise you can use:
 ```
 virtualenv mirdeepsquared-env -p python3.9
+```
+
+## Installing (from source)
+```
 source mirdeepsquared-env/bin/activate
 pip install -r requirements.txt
 python3 -m pip install -e .

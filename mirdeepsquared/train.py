@@ -63,10 +63,10 @@ def get_model(density_maps, numeric_features, model_size=64, initial_learning_ra
     structure_dense = Dense(model_size * 32, activation='relu')(bidirectional_lstm)
 
     # Input 4 - numerical features
-    input_layer_numeric_features = Input(shape=(4,), dtype='float32', name='numeric_features')
+    input_layer_numeric_features = Input(shape=(5,), dtype='float32', name='numeric_features')
     normalizer_layer = Normalization()
     normalizer_layer.adapt(numeric_features)
-    numeric_features_dense = Dense(model_size * 4, activation='relu')(normalizer_layer(input_layer_numeric_features))
+    numeric_features_dense = Dense(model_size * 5, activation='relu')(normalizer_layer(input_layer_numeric_features))
 
     # Input 5 - precursor sequence
     input_precursor = Input(shape=(111, 5), dtype='float32', name='precursor')

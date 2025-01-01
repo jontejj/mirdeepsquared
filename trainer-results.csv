@@ -1,0 +1,2 @@
+batch_size epochs model_size learning_rate regularize dropout_rate weight_constraint accuracy loss val_accuracy val_loss max_val_f1_score best_epoch mean_max_val_f1_score
+64 9 32 0.003 False 0.1 1.0 0.9956483840942383 0.01177848968654871 0.9878154993057251 104868.0703125 0.9919447898864746 9 0.990452378988266

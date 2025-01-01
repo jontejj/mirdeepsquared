@@ -15,6 +15,7 @@ import yaml
 
 def cut_off(pred, threshold):
     # y_predicted = np.round(pred) (default)
+    # If probability is equal or higher than "threshold", It's most likely a false positive according to the models
     y_predicted = (pred > threshold).astype(int)
     return y_predicted
 
@@ -29,18 +30,7 @@ def predict_main(args):
         raise ValueError("No novel predictions in input files. Nothing to filter")
 
     model_weights = model_weights_from_file(args.weights)
-
-    # X = np.asarray(novel_slice['read_density_map_percentage_change'].values.tolist())
-
     return true_positives(args.models, novel_slice, model_weights, args.threshold)
-    """
-    mature_slice = df.loc[df['predicted_as_novel'] == False]
-    if len(mature_slice) > 0:
-        X = np.asarray(mature_slice['read_density_map_percentage_change'].values.tolist())
-        pred = model.predict(X, verbose=0)
-        pred = (pred>=0.50) #If probability is equal or higher than 0.50, It's most likely a false positive (True)
-        [print(location) for location, pred in zip(mature_slice['location'], pred) if pred == True]
-    """
 
 
 def model_weights_from_file(model_weight_file):
@@ -73,7 +63,6 @@ def true_positives(model_path, df, model_weights, threshold):
 
     # Convert the averaged predictions to binary predictions (0 or 1)
     pred = cut_off(ensemble_predictions, threshold)
-    # pred = (ensemble_predictions >= 0.50)  # If probability is equal or higher than 0.50, It's most likely a false positive (True)
     locations = locations_in(df)
 
     return [location for location, pred in zip(locations, pred) if pred == False]

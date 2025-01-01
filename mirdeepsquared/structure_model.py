@@ -26,6 +26,7 @@ class StructureModel(KerasModel):
         l2_strength = 0.001  # 0.8716 with 0.001, On test set 0.001 -> 0.8388 whilst 0.01 -> 0.8238
         input = Input(shape=(111,), dtype='float32', name='structure_as_1D_array')
         embedding_layer = Embedding(input_dim=17, output_dim=128, input_length=111, mask_zero=True)(input)
+        #TODO: try recurrent_dropout=0.2?
         bidirectional_lstm = Bidirectional(LSTM(128))(embedding_layer)
         dense = Dense(10000, activation='relu', kernel_initializer=HeNormal(seed=42), kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42), bias_regularizer=l2(l2_strength))(bidirectional_lstm)
         output_layer = Dense(1, activation='sigmoid', kernel_regularizer=l1_l2(l1=l1_strength, l2=l2_strength), bias_regularizer=l2(l2_strength), kernel_initializer=GlorotNormal(seed=42), use_bias=True, bias_initializer=RandomNormal(mean=0.0, stddev=0.5, seed=42))(dense)

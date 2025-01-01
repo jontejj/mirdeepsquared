@@ -2,7 +2,6 @@ import argparse
 import os
 from pathlib import Path
 import shutil
-import sys
 import yaml
 
 from sklearn.metrics import confusion_matrix
@@ -78,8 +77,8 @@ def output_pdf(location, source_pickle, pdf_path, actual_label):
 
 
 if __name__ == '__main__':
-    # args = parse_args(['resources/dataset/split-5/holdout/', 'models15/'])
-    args = parse_args(sys.argv[1:])
+    args = parse_args(['resources/dataset/split/holdout/', 'mirdeepsquared/models16/'])
+    # args = parse_args(sys.argv[1:])
     path = args.dataset
     list_of_files = list_of_pickle_files_in(path)
     print("Predicting for samples in: " + str([os.path.basename(path) for path in list_of_files]))
